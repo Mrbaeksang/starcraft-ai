@@ -158,9 +158,7 @@ class LatentWorldModel(nn.Module):
 
         latent_loss = (1.0 - F.cosine_similarity(prediction["next_latent"], target_latent)).mean()
         reward_loss = F.smooth_l1_loss(prediction["reward"], reward)
-        terminal_loss = F.binary_cross_entropy_with_logits(
-            prediction["terminal_logit"], terminal
-        )
+        terminal_loss = F.binary_cross_entropy_with_logits(prediction["terminal_logit"], terminal)
         total_loss = latent_loss + 0.25 * reward_loss + 0.05 * terminal_loss
 
         return {
