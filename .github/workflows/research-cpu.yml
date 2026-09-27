@@ -1,0 +1,91 @@
+name: Manual CPU research run
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Model profile
+        required: true
+        default: small
+        type: choice
+        options:
+          - tiny
+          - small
+          - medium
+      steps:
+        description: Optimization steps per seed (1-5000)
+        required: true
+        default: "500"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manual-cpu-research-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate inputs
+    runs-on: ubuntu-slim
+    outputs:
+      steps: ${{ steps.validate.outputs.steps }}
+    steps:
+      - name: Validate
+        id: validate
+        shell: bash
+        env:
+          REQUESTED_STEPS: ${{ inputs.steps }}
+        run: |
+          if ! [[ "$REQUESTED_STEPS" =~ ^[0-9]+$ ]]; then
+            echo "steps must be an integer" >&2
+            exit 2
+          fi
+          if (( REQUESTED_STEPS < 1 || REQUESTED_STEPS > 5000 )); then
+            echo "steps must be in [1, 5000]" >&2
+            exit 2
+          fi
+          echo "steps=$REQUESTED_STEPS" >> "$GITHUB_OUTPUT"
+
+  experiment:
+    name: ${{ inputs.profile }} / seed ${{ matrix.seed }}
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        seed: [7, 23, 42, 101]
+
+    steps:
+      - name: Checkout trusted default branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync CPU environment
+        run: uv sync --extra cpu --group dev
+
+      - name: Run bounded experiment
+        run: |
+          mkdir -p artifacts
+          uv run --extra cpu scai benchmark-synthetic             --profile ${{ inputs.profile }}             --steps ${{ needs.validate.outputs.steps }}             --seed ${{ matrix.seed }}             --device cpu             --output artifacts/result-${{ inputs.profile }}-${{ matrix.seed }}.json
+
+      - name: Upload result
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: research-${{ inputs.profile }}-${{ matrix.seed }}-${{ github.run_id }}
+          path: artifacts/*.json
+          retention-days: 14
+          if-no-files-found: error

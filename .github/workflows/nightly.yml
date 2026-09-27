@@ -1,0 +1,74 @@
+name: Nightly research matrix
+
+on:
+  schedule:
+    - cron: "17 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-research
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: ${{ matrix.profile }} / seed ${{ matrix.seed }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        profile: [tiny, small]
+        seed: [7, 23, 42, 101]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync CPU environment
+        run: uv sync --extra cpu --group dev
+
+      - name: Run benchmark
+        run: |
+          mkdir -p artifacts
+          uv run --extra cpu scai benchmark-synthetic             --profile ${{ matrix.profile }}             --steps 150             --seed ${{ matrix.seed }}             --device cpu             --output artifacts/benchmark-${{ matrix.profile }}-${{ matrix.seed }}.json
+
+      - name: Write job summary
+        run: |
+          uv run --extra cpu python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+
+          path = next(Path("artifacts").glob("benchmark-*.json"))
+          result = json.loads(path.read_text())
+          print(f"## {result['profile']} / seed {result['seed']}")
+          print()
+          print("| metric | value |")
+          print("|---|---:|")
+          print(f"| parameters | {result['parameters']:,} |")
+          print(f"| first loss | {result['first_loss']:.6f} |")
+          print(f"| final loss | {result['final_loss']:.6f} |")
+          print(f"| loss ratio | {result['loss_ratio']:.4f} |")
+          print(f"| steps/sec | {result['steps_per_second']:.2f} |")
+          print(f"| seconds | {result['elapsed_seconds']:.2f} |")
+          PY
+
+      - name: Upload tiny result artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: benchmark-${{ matrix.profile }}-${{ matrix.seed }}
+          path: artifacts/*.json
+          retention-days: 7
+          if-no-files-found: error

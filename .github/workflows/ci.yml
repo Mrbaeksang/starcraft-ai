@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Python 3.12 / CPU
+  quality:
+    name: Quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -34,11 +34,51 @@ jobs:
       - name: Sync CPU environment
         run: uv sync --extra cpu --group dev
 
-      - name: Lint
+      - name: Ruff lint
         run: uv run --extra cpu ruff check .
 
-      - name: Tests
-        run: uv run --extra cpu pytest -q
+      - name: Ruff format
+        run: uv run --extra cpu ruff format --check .
 
-      - name: Synthetic world-model smoke train
-        run: uv run --extra cpu scai smoke-train --steps 5 --device cpu
+      - name: Compile Python
+        run: uv run --extra cpu python -m compileall -q src scripts
+
+      - name: Tests
+        run: uv run --extra cpu pytest -q --durations=10
+
+      - name: Build package
+        run: uv build
+
+  model-smoke:
+    name: Model smoke / seed ${{ matrix.seed }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [7, 23]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync CPU environment
+        run: uv sync --extra cpu --group dev
+
+      - name: World-model smoke train
+        run: uv run --extra cpu scai smoke-train --steps 10 --device cpu --seed ${{ matrix.seed }}
+
+      - name: Deterministic dynamics benchmark
+        run: |
+          mkdir -p artifacts
+          uv run --extra cpu scai benchmark-synthetic             --profile tiny             --steps 25             --seed ${{ matrix.seed }}             --device cpu             --output artifacts/benchmark.json
+          cat artifacts/benchmark.json

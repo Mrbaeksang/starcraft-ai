@@ -6,6 +6,16 @@ Build a reproducible open research framework for a StarCraft: Brood War agent ba
 
 This repository values falsifiable experiments over hype. Do not claim an idea is stronger, novel, or state of the art unless the repository contains a directly supporting evaluation.
 
+## Read first
+
+Before changing learning/data architecture, read:
+
+1. `TODO.md`
+2. `docs/RESEARCH_PLAN.md`
+3. `docs/REFERENCES.md`
+4. `docs/CI_STRATEGY.md`
+5. `docs/DATA_ACQUISITION.md`
+
 ## Environment
 
 - Primary learner: Windows 11 host + WSL2 Ubuntu.
@@ -13,6 +23,14 @@ This repository values falsifiable experiments over hype. Do not claim an idea i
 - GPU target: NVIDIA RTX 5090 via PyTorch CUDA 13.0 wheels.
 - Brood War runtime: classic 1.16.1 + BWAPI on Windows.
 - Never commit StarCraft binaries, MPQ files, commercial assets, or private replay collections.
+
+## CI-first rule
+
+If a task can run on a standard GitHub-hosted CPU runner, implement it in CI instead of requiring a local manual step.
+
+Every completed feature should leave behind an automated test, benchmark, or workflow where practical.
+
+Do not use a developer workstation as a public-repository self-hosted runner.
 
 ## First commands
 
@@ -34,16 +52,16 @@ make EXTRA=cpu check
 
 ## Engineering rules
 
-1. Read `docs/RESEARCH_PLAN.md` before changing the learning objective.
+1. Follow `TODO.md` milestone order.
 2. Keep the Windows BWAPI runtime boundary separate from the WSL2 learner.
 3. Prefer small typed PyTorch modules over a large RL framework until M2 is validated.
-4. Every model change preserves or adds a deterministic CPU smoke test.
+4. Every model change preserves or adds a deterministic CPU smoke/fixture test.
 5. Every training command accepts a seed and logs its effective config.
 6. Do not add a large dependency without explaining why NumPy/PyTorch/stdlib is insufficient.
 7. Keep data schemas versioned and backward-readable where practical.
 8. Avoid hidden privileged information in live-game observations.
-9. Do not jump to M4/M5 before M1/M2 metrics exist.
-10. Fix root causes; do not silence tests or lint rules.
+9. Do not jump to M4/M5 before M1/M2/M3 gates pass.
+10. Fix root causes; do not silence tests, lint rules, or negative controls.
 
 ## Research rules
 
@@ -53,6 +71,7 @@ make EXTRA=cpu check
 - Public benchmark claims include wall-clock time, environment steps, hardware, seeds, and uncertainty.
 - Prefer ablations that can disprove the method.
 - Do not use win rate alone to debug representation learning.
+- “Recent” or “novel” methods do not replace a mature baseline.
 
 ## Code style
 
@@ -77,4 +96,5 @@ M1 definition of done:
 - hidden-information leakage disabled by default;
 - tiny legal/synthetic fixture;
 - Linux/WSL2 loader tests;
-- measured transitions/sec.
+- measured transitions/sec;
+- compile/test paths automated in CI where possible.

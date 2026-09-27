@@ -1,7 +1,7 @@
 EXTRA ?= cpu
 UV_RUN := uv run --extra $(EXTRA)
 
-.PHONY: setup doctor smoke test lint format check
+.PHONY: setup doctor smoke benchmark test lint format format-check build check
 
 setup:
 	uv sync --extra $(EXTRA) --group dev
@@ -12,6 +12,9 @@ doctor:
 smoke:
 	$(UV_RUN) scai smoke-train --steps 50 --device auto
 
+benchmark:
+	$(UV_RUN) scai benchmark-synthetic --profile tiny --steps 50 --device auto
+
 test:
 	$(UV_RUN) pytest -q
 
@@ -21,4 +24,10 @@ lint:
 format:
 	$(UV_RUN) ruff format .
 
-check: lint test smoke
+format-check:
+	$(UV_RUN) ruff format --check .
+
+build:
+	uv build
+
+check: lint format-check test smoke benchmark build
