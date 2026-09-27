@@ -5,6 +5,7 @@ import platform
 import sys
 from dataclasses import asdict
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -32,9 +33,9 @@ def doctor() -> None:
 
 @app.command("smoke-train")
 def smoke_train_command(
-    steps: int = typer.Option(50, min=1),
-    device: str = typer.Option("auto", help="auto, cpu, or cuda"),
-    seed: int = typer.Option(7),
+    steps: Annotated[int, typer.Option(min=1)] = 50,
+    device: Annotated[str, typer.Option(help="auto, cpu, or cuda")] = "auto",
+    seed: Annotated[int, typer.Option()] = 7,
 ) -> None:
     """Run a tiny action-conditioned latent world-model training loop."""
     from starcraft_ai.training import smoke_train
@@ -47,11 +48,14 @@ def smoke_train_command(
 
 @app.command("benchmark-synthetic")
 def benchmark_synthetic_command(
-    profile: str = typer.Option("tiny", help="tiny, small, or medium"),
-    steps: int = typer.Option(100, min=1, max=20_000),
-    seed: int = typer.Option(7),
-    device: str = typer.Option("auto", help="auto, cpu, or cuda"),
-    output: Path | None = typer.Option(None, help="Optional JSON result path."),
+    profile: Annotated[str, typer.Option(help="tiny, small, or medium")] = "tiny",
+    steps: Annotated[int, typer.Option(min=1, max=20_000)] = 100,
+    seed: Annotated[int, typer.Option()] = 7,
+    device: Annotated[str, typer.Option(help="auto, cpu, or cuda")] = "auto",
+    output: Annotated[
+        Path | None,
+        typer.Option(help="Optional JSON result path."),
+    ] = None,
 ) -> None:
     """Benchmark deterministic synthetic latent dynamics training."""
     from starcraft_ai.benchmarking import benchmark_synthetic_dynamics
