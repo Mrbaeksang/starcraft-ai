@@ -77,6 +77,21 @@ Public broadcast videos are **not copied into Git**. We keep URLs and factual me
 
 See [Data acquisition](docs/DATA_ACQUISITION.md).
 
+## CI-first development
+
+This public repository deliberately pushes as much work as possible into GitHub Actions.
+
+- **Every push / PR:** lint, formatting, compile checks, tests, package build, and two-seed model smoke tests.
+- **Nightly:** 8-way CPU research matrix across model sizes and seeds.
+- **Manual from GitHub UI:** bounded 4-seed CPU experiment without cloning the repository.
+- **Security:** CodeQL scans both Python and GitHub Actions workflows.
+- **Dependencies:** Dependabot maintains both `uv` and GitHub Actions dependencies.
+- **Artifacts:** only tiny metric JSON files are retained; datasets/checkpoints are not abused as Actions storage.
+
+Standard GitHub-hosted runners for public repositories are useful for engineering, small baselines, and reproducibility, but they do not provide a free GPU. The only planned local responsibilities are therefore the things CI genuinely cannot provide: the licensed Brood War/BWAPI runtime and long RTX training.
+
+See [CI strategy](docs/CI_STRATEGY.md), [reference map](docs/REFERENCES.md), and the canonical [TODO](TODO.md).
+
 ## Current status
 
 | Milestone | Goal | Status |
