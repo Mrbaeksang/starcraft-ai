@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import argparse
 import json
 import subprocess
@@ -17,7 +15,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--yt-dlp",
         default="yt-dlp",
-        help="yt-dlp executable path. Recommended stable version is documented in DATA_ACQUISITION.md.",
+        help=(
+            "yt-dlp executable path. Recommended stable version is documented "
+            "in DATA_ACQUISITION.md."
+        ),
     )
     return parser.parse_args()
 
