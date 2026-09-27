@@ -75,7 +75,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Sync CPU environment
-        run: uv sync --extra cpu --group dev
+        run: uv sync --locked --extra cpu --group dev
 
       - name: Run bounded experiment
         run: |

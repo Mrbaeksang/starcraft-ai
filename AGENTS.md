@@ -37,7 +37,7 @@ Do not use a developer workstation as a public-repository self-hosted runner.
 GPU:
 
 ```bash
-uv sync --extra cu130 --group dev
+uv sync --locked --extra cu130 --group dev
 uv run --extra cu130 scai doctor
 uv run --extra cu130 scai smoke-train --steps 100 --device cuda
 make EXTRA=cu130 check
@@ -46,7 +46,7 @@ make EXTRA=cu130 check
 CPU / CI:
 
 ```bash
-uv sync --extra cpu --group dev
+uv sync --locked --extra cpu --group dev
 make EXTRA=cpu check
 ```
 

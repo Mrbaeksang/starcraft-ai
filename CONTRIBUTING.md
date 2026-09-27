@@ -5,7 +5,7 @@ Contributions are welcome, especially when they make an experiment easier to fal
 ## Before opening a PR
 
 ```bash
-uv sync --extra cpu --group dev
+uv sync --locked --extra cpu --group dev
 make EXTRA=cpu check
 ```
 

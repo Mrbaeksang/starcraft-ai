@@ -4,7 +4,7 @@ UV_RUN := uv run --extra $(EXTRA)
 .PHONY: setup doctor smoke benchmark test lint format format-check build check
 
 setup:
-	uv sync --extra $(EXTRA) --group dev
+	uv sync --locked --extra $(EXTRA) --group dev
 
 doctor:
 	$(UV_RUN) scai doctor

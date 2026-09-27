@@ -32,7 +32,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Sync CPU environment
-        run: uv sync --extra cpu --group dev
+        run: uv sync --locked --extra cpu --group dev
 
       - name: Ruff lint
         run: uv run --extra cpu ruff check .
@@ -72,7 +72,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Sync CPU environment
-        run: uv sync --extra cpu --group dev
+        run: uv sync --locked --extra cpu --group dev
 
       - name: World-model smoke train
         run: uv run --extra cpu scai smoke-train --steps 10 --device cpu --seed ${{ matrix.seed }}

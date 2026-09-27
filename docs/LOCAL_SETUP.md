@@ -29,13 +29,13 @@ cd starcraft-ai
 
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv python install 3.12
-uv sync --extra cu130 --group dev
+uv sync --locked --extra cu130 --group dev
 ```
 
 CPU:
 
 ```bash
-uv sync --extra cpu --group dev
+uv sync --locked --extra cpu --group dev
 ```
 
 ## Verify
