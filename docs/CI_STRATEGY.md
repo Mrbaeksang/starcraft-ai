@@ -42,6 +42,14 @@ It intentionally:
 - fans out four seeds to parallel standard runners;
 - stores only small metric JSON files.
 
+### Dependency reproducibility
+
+`Sync uv lockfile` runs only after trusted pushes to `main` that modify dependency configuration.
+
+It resolves `uv.lock` in GitHub Actions and commits the lockfile with `github-actions[bot]`, eliminating a local lockfile-maintenance step. It is never triggered by pull-request code.
+
+Dependabot separately proposes `uv` and GitHub Actions upgrades.
+
 ## What GitHub-hosted CI cannot replace
 
 Standard public runners currently provide 4 CPU cores, 16 GB RAM and 14 GB SSD, but no free GPU. A single hosted job can run for at most 6 hours.

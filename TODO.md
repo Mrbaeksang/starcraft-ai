@@ -49,7 +49,7 @@ This is the canonical execution order for humans and coding agents.
 - [ ] Fixed opponent/map evaluation suite.
 - [ ] Confidence intervals and exploitability/diversity metrics.
 
-## Automation backlog
+## Automation
 
 - [x] PR lint/test/build.
 - [x] Multi-seed model smoke.
@@ -57,7 +57,7 @@ This is the canonical execution order for humans and coding agents.
 - [x] Manual GitHub UI CPU experiments.
 - [x] CodeQL.
 - [x] Dependabot for uv and GitHub Actions.
-- [ ] Commit a generated `uv.lock` once dependency policy stabilizes.
+- [x] Automatic `uv.lock` synchronization on trusted main changes.
 - [ ] Add benchmark regression thresholds after enough history exists.
 - [ ] Add collector Windows CI when its build files exist.
 - [ ] Add small legally redistributable M1 fixture to nightly training.
