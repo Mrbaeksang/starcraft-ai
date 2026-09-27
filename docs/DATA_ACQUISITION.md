@@ -34,21 +34,23 @@ Use replay/BWAPI transitions for control labels.
 
 ## Current map pool seed
 
-`data/sources/major_proleague_2026-07-30.json` tracks a recent Major Proleague event with:
+`data/sources/major_proleague_2026-09-17.json` tracks a directly verified September 2026 Major Proleague event with:
 
-- KnockOut
-- Odyssey RE
-- Aiolos
-- Octagon SE
 - Backrooms
+- Octagon SE
+- KnockOut
 - Colorless Fate
+- Odyssey RE
 - Attitude SE
+- Aiolos
+
+Daily Major Proleagues continued through September 18, 2026. The September 17 event is used here because its map list was directly verified from the event page.
 
 This is a **metadata seed**, not a claim that it is the only current tournament pool.
 
 ## Public video seed
 
-`data/sources/youtube_seed_index.json` contains verified URLs from SOOP's 2026 ASL S21 coverage plus search queries for the recent Proleague map names.
+`data/sources/youtube_seed_index.json` contains verified URLs from SOOP's 2026 ASL S21 and S22 coverage plus search queries for the recent Proleague map names.
 
 The repository stores URLs and factual metadata only.
 

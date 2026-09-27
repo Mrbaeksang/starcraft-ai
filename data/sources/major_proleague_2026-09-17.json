@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "competitive_map_pool",
+  "event": {
+    "name": "Major Proleague: September 17, 2026",
+    "date": "2026-09-17",
+    "region": "South Korea",
+    "source": "https://liquipedia.net/starcraft/Daily_Proleague/Major_Proleague/2026-09-17",
+    "verified_at": "2026-09-27"
+  },
+  "maps": [
+    "Backrooms",
+    "Octagon SE",
+    "KnockOut",
+    "Colorless Fate",
+    "Odyssey RE",
+    "Attitude SE",
+    "Aiolos"
+  ],
+  "notes": [
+    "This is the latest Major Proleague event whose complete map list was directly verified during repository setup.",
+    "Daily Major Proleagues continued through September 18, 2026.",
+    "Map names are metadata only. Map files are not redistributed by this repository.",
+    "A map must have a legally available local file before it can be used by the runtime."
+  ]
+}

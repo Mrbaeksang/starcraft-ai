@@ -71,7 +71,7 @@ The project separates **what is useful for learning** from **what is merely avai
 | Canonical control labels | our own BWAPI replay/live collector | exact observations/actions used for training and evaluation |
 | Broadcast video | SOOP/YouTube metadata and authorized local media only | strategy discovery, qualitative analysis, optional vision experiments |
 
-A recent Major Proleague event (2026-07-30) used **KnockOut, Odyssey RE, Aiolos, Octagon SE, Backrooms, Colorless Fate, and Attitude SE**. The repository tracks that pool as a current-distribution seed without redistributing the map files themselves.
+A recent Major Proleague event (2026-09-17) used **Backrooms, Octagon SE, KnockOut, Colorless Fate, Odyssey RE, Attitude SE, and Aiolos**. The repository tracks that pool as a current-distribution seed without redistributing the map files themselves.
 
 Public broadcast videos are **not copied into Git**. We keep URLs and factual metadata, then build local-only indexes when needed. This avoids turning a world-model project into a fragile video-scraping/OCR project and keeps the canonical learning labels tied to BWAPI state.
 

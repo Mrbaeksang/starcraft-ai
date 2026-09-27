@@ -35,6 +35,30 @@
       "title": "Round of 16 Group D Final Match Highlights | Google Play ASL S21",
       "published": "2026-04-21",
       "series": "ASL S21"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=bAeTzbE_Fk4",
+      "title": "Round of 24 Group A Finals Highlights | Google Play ASL S22",
+      "published": "2026-08-17",
+      "series": "ASL S22"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=DX_g0n_-0PQ",
+      "title": "Round of 16 Group A Decider Highlights | Google Play ASL S22",
+      "published": "2026-09-07",
+      "series": "ASL S22"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=Lzi4etwHmIk",
+      "title": "Round of 16 Group B Final Match Highlights | Google Play ASL S22",
+      "published": "2026-09-08",
+      "series": "ASL S22"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=VNqjKtdLxig",
+      "title": "Round of 16 Group D Losers' Bracket Highlights | Google Play ASL S22",
+      "published": "2026-09-15",
+      "series": "ASL S22"
     }
   ],
   "discovery_queries": [
@@ -44,6 +68,7 @@
     "2026 스타크래프트 프로리그 Octagon SE",
     "2026 스타크래프트 프로리그 Backrooms",
     "2026 스타크래프트 프로리그 Colorless Fate",
-    "2026 스타크래프트 프로리그 Attitude SE"
+    "2026 스타크래프트 프로리그 Attitude SE",
+    "2026 ASL S22 StarCraft SOOP"
   ]
 }
