@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this research code, please cite the repository."
+title: "StarCraft AI: Structured Latent World Models for Brood War"
+type: software
+authors:
+  - family-names: Baek
+    given-names: Sanghyeon
+repository-code: "https://github.com/Mrbaeksang/starcraft-ai"
+license: MIT
+version: 0.1.0
+date-released: 2026-09-27

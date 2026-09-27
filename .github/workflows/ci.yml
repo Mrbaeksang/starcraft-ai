@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python 3.12 / CPU
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync CPU environment
+        run: uv sync --extra cpu --group dev
+
+      - name: Lint
+        run: uv run --extra cpu ruff check .
+
+      - name: Tests
+        run: uv run --extra cpu pytest -q
+
+      - name: Synthetic world-model smoke train
+        run: uv run --extra cpu scai smoke-train --steps 5 --device cpu

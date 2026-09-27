@@ -1,0 +1,48 @@
+name: Research experiment
+description: Propose a falsifiable experiment or ablation
+title: "[Experiment] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prefer experiments that can produce a useful negative result.
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What specific claim are we testing?
+      placeholder: "At the same planning budget, X improves Y over baseline Z."
+    validations:
+      required: true
+  - type: textarea
+    id: baseline
+    attributes:
+      label: Baseline
+      description: What simpler method should this beat or match?
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Dataset / split
+      description: State the dataset, observability mode, and split.
+    validations:
+      required: true
+  - type: textarea
+    id: metric
+    attributes:
+      label: Metric and success criterion
+      description: What result supports or rejects the hypothesis?
+    validations:
+      required: true
+  - type: textarea
+    id: budget
+    attributes:
+      label: Compute budget
+      description: GPU, wall-clock target, environment steps, or planning budget.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction command
+      render: shell
