@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "kind": "structured_replay_dataset",
+  "name": "StarData",
+  "repository": "https://github.com/TorchCraft/StarData",
+  "reported_games": 65646,
+  "reported_compressed_size_gb": 365,
+  "reported_frames": 1535000000,
+  "reported_player_actions": 496000000,
+  "reported_frame_rate_hz": 8,
+  "storage": "s3://stardata",
+  "status": "archived-upstream",
+  "usage": "candidate pretraining / representation-learning source",
+  "notes": [
+    "Do not automatically download the complete dataset.",
+    "The upstream README states that its replay data is compatible with the TorchCraft version bundled by that project.",
+    "Treat this as historical structured pretraining data; evaluate distribution shift before mixing it with current competitive data."
+  ]
+}

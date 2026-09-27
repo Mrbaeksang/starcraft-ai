@@ -19,11 +19,16 @@ wandb/
 data/raw/
 data/interim/
 data/processed/
+data/local/
 runtime/
 *.rep
 *.scx
 *.scm
 *.mpq
+*.mp4
+*.mkv
+*.webm
+*.avi
 
 .env
 .env.*

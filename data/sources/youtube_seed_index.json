@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "kind": "external_video_metadata",
+  "policy": {
+    "media_committed_to_repository": false,
+    "purpose": "source discovery, strategy/map coverage, optional local vision experiments",
+    "copyright": "Third-party media remains with its respective rights holders. URLs and factual metadata only are committed."
+  },
+  "channel": {
+    "name": "SOOP 게임&e스포츠",
+    "platform": "YouTube",
+    "official_context": "SOOP StarCraft / ASL coverage"
+  },
+  "videos": [
+    {
+      "url": "https://www.youtube.com/watch?v=mZDOUhgF19g",
+      "title": "Round of 16 Group A Winner's Match Highlights | Google Play ASL S21",
+      "published": "2026-04-13",
+      "series": "ASL S21"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=EwVBhQpoDio",
+      "title": "Round of 16 Group B Final Match Highlights | Google Play ASL S21",
+      "published": "2026-04-14",
+      "series": "ASL S21"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=R4UNfYqtqSU",
+      "title": "Round of 16 Group C Winner's Match Highlights | Google Play ASL S21",
+      "published": "2026-04-20",
+      "series": "ASL S21"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=GOwsJaJYsng",
+      "title": "Round of 16 Group D Final Match Highlights | Google Play ASL S21",
+      "published": "2026-04-21",
+      "series": "ASL S21"
+    }
+  ],
+  "discovery_queries": [
+    "2026 스타크래프트 프로리그 KnockOut",
+    "2026 스타크래프트 프로리그 Odyssey RE",
+    "2026 스타크래프트 프로리그 Aiolos",
+    "2026 스타크래프트 프로리그 Octagon SE",
+    "2026 스타크래프트 프로리그 Backrooms",
+    "2026 스타크래프트 프로리그 Colorless Fate",
+    "2026 스타크래프트 프로리그 Attitude SE"
+  ]
+}
