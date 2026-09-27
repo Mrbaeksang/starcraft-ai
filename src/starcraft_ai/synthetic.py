@@ -37,9 +37,7 @@ def make_synthetic_batch(
         generator=generator,
         device=device,
     )
-    entity_mask = torch.ones(
-        batch_size, entities_per_state, dtype=torch.bool, device=device
-    )
+    entity_mask = torch.ones(batch_size, entities_per_state, dtype=torch.bool, device=device)
     action_type = torch.randint(
         0,
         config.action_types,
