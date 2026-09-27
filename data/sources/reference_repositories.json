@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "kind": "reference_repository_pins",
+  "verified_at": "2026-09-27",
+  "repositories": [
+    {
+      "repo": "bwapi/bwapi",
+      "default_branch": "main",
+      "commit": "d727fed68558c506163048ea889131d8cbb33915",
+      "archived": false,
+      "license": "LGPL-3.0",
+      "role": "Brood War runtime/API semantics"
+    },
+    {
+      "repo": "TorchCraft/TorchCraftAI",
+      "default_branch": "main",
+      "commit": "afce4b6004712e2c32ab825ad705608f8c042fc8",
+      "archived": true,
+      "license": "MIT",
+      "role": "CherryPi complete-agent and Brood War RL reference"
+    },
+    {
+      "repo": "TorchCraft/StarData",
+      "default_branch": "main",
+      "commit": "e2411a54eac0cc9341ac449e61e1b08c086220ec",
+      "archived": true,
+      "license": "NOASSERTION",
+      "role": "Historical structured replay dataset reference"
+    },
+    {
+      "repo": "danijar/dreamerv3",
+      "default_branch": "main",
+      "commit": "e3f02248693a79dc8b0ebd62c93683888ddaccfe",
+      "archived": false,
+      "license": "MIT",
+      "role": "Mature world-model RL baseline reference"
+    },
+    {
+      "repo": "nicklashansen/tdmpc2",
+      "default_branch": "main",
+      "commit": "e9f59321933cbc8e11a002b842adc7d4ffae8ff1",
+      "archived": false,
+      "license": "MIT",
+      "role": "Latent MPC baseline/design reference"
+    },
+    {
+      "repo": "Little-Podi/AdaWorld",
+      "default_branch": "main",
+      "commit": "fe3701e607d025376b54aad28d04121f592ddbb3",
+      "archived": false,
+      "license": "Apache-2.0",
+      "role": "Latent-action world-model research reference"
+    }
+  ]
+}
