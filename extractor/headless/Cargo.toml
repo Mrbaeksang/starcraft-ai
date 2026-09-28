@@ -1,0 +1,14 @@
+[package]
+name = "scai-headless-extractor"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[dependencies]
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+bw-engine = { git = "https://github.com/broodwar-live/bw-engine.git", rev = "befa5432c8749cdea196703c5b82c0f0fcfad2c5" }
+replay-core = { git = "https://github.com/broodwar-live/bw-engine.git", rev = "befa5432c8749cdea196703c5b82c0f0fcfad2c5" }
