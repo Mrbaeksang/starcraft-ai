@@ -4,7 +4,6 @@ import pytest
 
 from starcraft_ai.transition_training import train_transition_dataset
 
-
 FIXTURE = Path("tests/fixtures/transitions_v1.jsonl")
 
 
