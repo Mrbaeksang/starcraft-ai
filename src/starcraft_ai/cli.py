@@ -268,5 +268,51 @@ def compare_backends_command(
         raise typer.Exit(code=2)
 
 
+@app.command("certify-backend")
+def certify_backend_command(
+    reference: Annotated[Path, typer.Argument(help="Authoritative BWAPI TransitionV1 JSONL.")],
+    candidate: Annotated[Path, typer.Argument(help="Headless candidate TransitionV1 JSONL.")],
+    replay_sha256: Annotated[str, typer.Option(help="SHA-256 of the source .rep file.")],
+    candidate_backend: Annotated[
+        str,
+        typer.Option(help="Candidate backend name, e.g. broodwar-live/bw-engine."),
+    ],
+    candidate_backend_commit: Annotated[
+        str,
+        typer.Option(help="Exact 40-character candidate backend git SHA."),
+    ],
+    output: Annotated[Path, typer.Option(help="Certificate JSON output path.")],
+) -> None:
+    """Write a deterministic certificate only when backend promotion checks pass."""
+    from starcraft_ai.data.certification import (
+        create_backend_certificate,
+        write_backend_certificate,
+    )
+
+    certificate = create_backend_certificate(
+        reference,
+        candidate,
+        replay_sha256=replay_sha256,
+        candidate_backend=candidate_backend,
+        candidate_backend_commit=candidate_backend_commit,
+    )
+    write_backend_certificate(output, certificate)
+    typer.echo(f"certificate: {certificate.certificate_id}")
+    typer.echo(f"wrote:       {output}")
+
+
+@app.command("validate-certification")
+def validate_certification_command(
+    path: Annotated[Path, typer.Argument(help="Backend certificate JSON.")],
+) -> None:
+    """Validate a committed backend promotion certificate."""
+    from starcraft_ai.data.certification import load_backend_certificate
+
+    certificate = load_backend_certificate(path)
+    typer.echo(f"valid:       {certificate.certificate_id}")
+    typer.echo(f"backend:     {certificate.candidate_backend}")
+    typer.echo(f"commit:      {certificate.candidate_backend_commit}")
+
+
 if __name__ == "__main__":
     app()
