@@ -48,7 +48,7 @@ FrameSummary summarize_frame(
 
 
 void write_state_jsonl(
-    const torchcraft::replayer::Replayer& replay,
+    torchcraft::replayer::Replayer& replay,
     const std::string& output_path) {
   std::ofstream out(output_path);
   if (!out.good()) {
