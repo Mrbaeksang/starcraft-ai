@@ -41,7 +41,7 @@ jobs:
       - name: Compile BWAPI runtime collector translation unit
         shell: cmd
         run: >
-          cl /nologo /std:c++17 /EHsc /W4
+          cl /nologo /std:c++17 /EHsc /W4 /DNOMINMAX
           /I external\bwapi\bwapi\include
           /I collector\bwapi\include
           /c collector\bwapi\src\main.cpp
