@@ -66,6 +66,10 @@ jobs:
           echo "## bounded chunk range probe" >> artifacts/report.md
           range_code="$(curl -LIsS --max-time 30 -H "Range: bytes=0-67108863" -o artifacts/range.headers -w '%{http_code}' "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz")"
           echo "range_http_code=$range_code" >> artifacts/report.md
+          get_meta="$(curl -LfsS --max-time 60 --range 0-1048575 --max-filesize 2097152 -o artifacts/range-get.bin -w 'code=%{http_code} bytes=%{size_download}' "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz")"
+          get_status=$?
+          echo "range_get_status=$get_status $get_meta" >> artifacts/report.md
+          rm -f artifacts/range-get.bin
           if [ "$range_code" = "206" ]; then
             curl -LfsS --max-time 180 --range 0-67108863 \
               "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz" \
