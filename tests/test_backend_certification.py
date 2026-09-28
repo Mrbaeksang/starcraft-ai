@@ -11,7 +11,6 @@ from starcraft_ai.data.certification import (
     write_backend_certificate,
 )
 
-
 FIXTURE = Path("tests/fixtures/transitions_v1.jsonl")
 REPLAY_SHA = "a" * 64
 BACKEND_SHA = "b" * 40
