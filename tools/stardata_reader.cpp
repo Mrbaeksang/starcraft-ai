@@ -110,22 +110,37 @@ int main(int argc, char** argv) {
     const auto last =
         summarize_frame(last_index, replay.getFrame(last_index), player_ids);
 
+    std::size_t total_actions = 0;
+    std::size_t frames_with_actions = 0;
+    std::size_t max_units = 0;
+    std::size_t first_nonempty_frame = replay.size();
+
     for (std::size_t index = 0; index < replay.size(); ++index) {
       const auto* frame = replay.getFrame(index);
       if (!frame) {
         continue;
       }
+      std::size_t frame_units = 0;
       for (const auto& [player_id, units] : frame->units) {
-        (void)units;
         player_ids.insert(player_id);
+        frame_units += units.size();
+      }
+      max_units = std::max(max_units, frame_units);
+      if (frame_units > 0 && first_nonempty_frame == replay.size()) {
+        first_nonempty_frame = index;
       }
       for (const auto& [player_id, resources] : frame->resources) {
         (void)resources;
         player_ids.insert(player_id);
       }
+      std::size_t frame_actions = 0;
       for (const auto& [player_id, actions] : frame->actions) {
-        (void)actions;
         player_ids.insert(player_id);
+        frame_actions += actions.size();
+      }
+      total_actions += frame_actions;
+      if (frame_actions > 0) {
+        ++frames_with_actions;
       }
     }
 
@@ -133,6 +148,12 @@ int main(int argc, char** argv) {
     std::cout << "\"frames\":" << replay.size() << ",";
     std::cout << "\"map_width\":" << replay.mapWidth() << ",";
     std::cout << "\"map_height\":" << replay.mapHeight() << ",";
+    std::cout << "\"total_actions\":" << total_actions << ",";
+    std::cout << "\"frames_with_actions\":" << frames_with_actions << ",";
+    std::cout << "\"max_units\":" << max_units << ",";
+    std::cout << "\"first_nonempty_frame\":"
+              << (first_nonempty_frame == replay.size() ? -1 : static_cast<long long>(first_nonempty_frame))
+              << ",";
 
     std::cout << "\"player_ids\":[";
     bool first_player = true;
