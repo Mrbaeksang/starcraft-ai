@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -71,11 +72,6 @@ Options parse_options(int argc, char** argv) {
   if (options.mode == "replay" && options.player_id < 0) {
     throw std::runtime_error("--player-id is required for replay mode");
   }
-  if (options.mode == "replay" && options.observability == "player") {
-    throw std::runtime_error(
-        "player-observable replay extraction is gated by M1-C; "
-        "use privileged replay mode or live player mode");
-  }
   if (options.horizon_frames < 1) {
     throw std::runtime_error("--horizon-frames must be >= 1");
   }
@@ -126,15 +122,28 @@ scai::ObservationRecord capture_observation(
   observation.supply_total = std::max(perspective->supplyTotal(), observation.supply_used);
   observation.map_width = BWAPI::Broodwar->mapWidth();
   observation.map_height = BWAPI::Broodwar->mapHeight();
+  // BWAPI's public replay tile API is replay-wide rather than arbitrary
+  // perspective-player-specific, so do not pretend it is a player view.
   observation.explored_fraction =
       options.mode == "live" ? explored_fraction_live() : 0.0;
+
+  for (const auto upgrade : BWAPI::UpgradeTypes::allUpgradeTypes()) {
+    if (perspective->getUpgradeLevel(upgrade) > 0) {
+      observation.upgrades.push_back(upgrade.getID());
+    }
+  }
+  for (const auto tech : BWAPI::TechTypes::allTechTypes()) {
+    if (perspective->hasResearched(tech)) {
+      observation.techs.push_back(tech.getID());
+    }
+  }
 
   for (const auto unit : BWAPI::Broodwar->getAllUnits()) {
     if (!unit || !unit->exists()) continue;
 
     const std::string relation = owner_relation(unit->getPlayer(), perspective);
     const bool player_visible =
-        relation == "self" || relation == "neutral" || unit->isVisible(perspective);
+        relation == "self" || unit->isVisible(perspective);
     if (options.observability == "player" && !player_visible) continue;
 
     const auto position = unit->getPosition();
@@ -151,7 +160,8 @@ scai::ObservationRecord capture_observation(
     record.shields = std::max(unit->getShields(), 0);
     record.energy = std::max(unit->getEnergy(), 0);
     record.order_id = std::max(unit->getOrder().getID(), 0);
-    record.visible = true;
+    record.visible =
+        options.observability == "privileged" ? true : player_visible;
     record.position_source = "current";
     record.last_seen_frame = -1;
     observation.units.push_back(record);
@@ -219,15 +229,42 @@ bool map_command(
   return true;
 }
 
+std::string action_signature(const scai::ActionRecord& action) {
+  std::ostringstream key;
+  key << action.action_type << "|"
+      << action.target_unit_id << "|"
+      << action.target_x << "|"
+      << action.target_y << "|"
+      << action.argument_type_id;
+  return key.str();
+}
+
 std::vector<scai::ActionRecord> capture_actions(BWAPI::Player perspective) {
   const int frame = BWAPI::Broodwar->getFrameCount();
-  std::vector<scai::ActionRecord> actions;
+  std::map<std::string, scai::ActionRecord> grouped;
+
   for (const auto unit : perspective->getUnits()) {
     if (!unit || !unit->exists() || unit->getLastCommandFrame() != frame) continue;
+
     scai::ActionRecord action;
-    if (map_command(unit->getLastCommand(), frame, perspective->getID(), action)) {
-      actions.push_back(action);
+    if (!map_command(unit->getLastCommand(), frame, perspective->getID(), action)) {
+      continue;
     }
+
+    const std::string key = action_signature(action);
+    auto [iterator, inserted] = grouped.emplace(key, action);
+    if (inserted) {
+      iterator->second.actor_unit_ids.clear();
+    }
+    iterator->second.actor_unit_ids.push_back(unit->getID());
+  }
+
+  std::vector<scai::ActionRecord> actions;
+  actions.reserve(grouped.size());
+  for (auto& [key, action] : grouped) {
+    (void)key;
+    std::sort(action.actor_unit_ids.begin(), action.actor_unit_ids.end());
+    actions.push_back(action);
   }
   return actions;
 }
