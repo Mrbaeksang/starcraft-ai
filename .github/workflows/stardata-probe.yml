@@ -1,0 +1,155 @@
+name: StarData source probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/stardata-probe.yml"
+      - "tools/stardata_reader.cpp"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Probe StarData public endpoints
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set +e
+
+          probe_head() {
+            name="$1"
+            url="$2"
+            echo "## $name" >> artifacts/report.md
+            echo "$url" >> artifacts/report.md
+            code="$(curl -LIsS --max-time 30 -o "artifacts/$name.headers" -w '%{http_code}' "$url")"
+            status=$?
+            echo "curl_status=$status http_code=$code" >> artifacts/report.md
+            echo "" >> artifacts/report.md
+          }
+
+          probe_head "train-list" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list"
+          probe_head "chunk-0" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz"
+          probe_head "direct-first-tcr" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0/bwrep_065pa.tcr"
+          probe_head "s3-virtual" "https://stardata.s3.amazonaws.com/?list-type=2&max-keys=20"
+          probe_head "s3-path" "https://s3.amazonaws.com/stardata/?list-type=2&max-keys=20"
+
+          curl -LfsS --max-time 30 \
+            "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list" \
+            -o artifacts/train.list
+          train_status=$?
+          echo "train_list_download_status=$train_status" >> artifacts/report.md
+
+          curl -LfsS --max-time 60 \
+            "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0/bwrep_065pa.tcr" \
+            -o artifacts/first.tcr
+          direct_status=$?
+          direct_size="$(wc -c < artifacts/first.tcr 2>/dev/null || echo 0)"
+          echo "direct_tcr_download_status=$direct_status size=$direct_size" >> artifacts/report.md
+
+          if [ -s artifacts/train.list ]; then
+            echo "" >> artifacts/report.md
+            echo "## train.list first 30 lines" >> artifacts/report.md
+            echo "BEGIN_TRAIN_LIST" >> artifacts/report.md
+            head -30 artifacts/train.list >> artifacts/report.md
+            echo "END_TRAIN_LIST" >> artifacts/report.md
+          fi
+
+          echo "" >> artifacts/report.md
+          echo "## bounded chunk range probe" >> artifacts/report.md
+          range_code="$(curl -LIsS --max-time 30 -H "Range: bytes=0-67108863" -o artifacts/range.headers -w '%{http_code}' "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz")"
+          echo "range_http_code=$range_code" >> artifacts/report.md
+          get_meta="$(curl -LfsS --max-time 60 --range 0-1048575 --max-filesize 2097152 -o artifacts/range-get.bin -w 'code=%{http_code} bytes=%{size_download}' "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz")"
+          get_status=$?
+          echo "range_get_status=$get_status $get_meta" >> artifacts/report.md
+          rm -f artifacts/range-get.bin
+          if [ "$get_status" -eq 0 ] && echo "$get_meta" | grep -q "code=206"; then
+            curl -LfsS --max-time 180 --range 0-67108863 --max-filesize 70000000 \
+              "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz" \
+              -o artifacts/chunk0-prefix.tar.gz
+            prefix_size="$(wc -c < artifacts/chunk0-prefix.tar.gz)"
+            echo "range_bytes=$prefix_size" >> artifacts/report.md
+            if [ "$prefix_size" -le 70000000 ]; then
+              gzip -dc artifacts/chunk0-prefix.tar.gz > artifacts/chunk0-prefix.tar 2>artifacts/gzip-partial.err
+              gzip_status=$?
+              echo "partial_gzip_status=$gzip_status" >> artifacts/report.md
+              tar -tf artifacts/chunk0-prefix.tar > artifacts/tar-list.txt 2>artifacts/tar-list.err
+              tar_status=$?
+              echo "partial_tar_status=$tar_status" >> artifacts/report.md
+              first_tcr="$(grep -m1 "[.]tcr" artifacts/tar-list.txt)"
+              echo "first_tar_member=$first_tcr" >> artifacts/report.md
+              if [ -n "$first_tcr" ]; then
+                tar -xOf artifacts/chunk0-prefix.tar "$first_tcr" > artifacts/sample.tcr 2>artifacts/tar-extract.err
+                extract_status=$?
+                sample_size="$(wc -c < artifacts/sample.tcr 2>/dev/null || echo 0)"
+                echo "sample_extract_status=$extract_status sample_size=$sample_size" >> artifacts/report.md
+              fi
+            else
+              echo "range guard failed: server returned too much data" >> artifacts/report.md
+            fi
+          else
+            echo "GET range unsupported; partial extraction skipped" >> artifacts/report.md
+          fi
+
+          rm -f artifacts/chunk0-prefix.tar artifacts/chunk0-prefix.tar.gz
+          cat artifacts/report.md >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Checkout TorchCraft source
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: TorchCraft/TorchCraft
+          ref: 8f09ba0a8425b172b1c2700f242afa24336e7237
+          path: external/torchcraft
+
+      - name: Build standalone StarData reader
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libzstd-dev
+          g++ -std=c++17 -O2 -DWITH_ZSTD -include limits \
+            -I external/torchcraft/include \
+            -I external/torchcraft/replayer \
+            -I external/torchcraft/BWEnv/fbs \
+            tools/stardata_reader.cpp \
+            external/torchcraft/replayer/replayer.cpp \
+            external/torchcraft/replayer/frame.cpp \
+            external/torchcraft/replayer/frame_serialization.cpp \
+            external/torchcraft/replayer/frame_diff.cpp \
+            external/torchcraft/replayer/frame_diff_serialization.cpp \
+            -lzstd \
+            -o artifacts/stardata-reader
+
+      - name: Parse extracted StarData sample
+        shell: bash
+        run: |
+          test -s artifacts/sample.tcr
+          artifacts/stardata-reader artifacts/sample.tcr | tee artifacts/sample-summary.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path("artifacts/sample-summary.json").read_text())
+          assert data["frames"] > 0
+          assert len(data["player_ids"]) >= 2
+          assert data["max_units"] > 0
+          assert data["first_nonempty_frame"] >= 0
+          assert data["order_events"] > 0
+          assert data["last"]["units"] > 0
+          print(json.dumps(data, indent=2))
+          PY
+      - name: Upload probe report
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: stardata-source-probe
+          path: artifacts/
+          retention-days: 3
+          if-no-files-found: error
