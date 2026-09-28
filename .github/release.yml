@@ -1,0 +1,21 @@
+changelog:
+  categories:
+    - title: Research
+      labels:
+        - research
+    - title: Models & planning
+      labels:
+        - area:model
+        - area:planning
+    - title: Data
+      labels:
+        - area:data
+    - title: Infrastructure
+      labels:
+        - area:infra
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Other changes
+      labels:
+        - "*"

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Open research on structured latent world models and planning for StarCraft: Brood War.">
+  <title>StarCraft AI — World model first. Agent second.</title>
+  <style>
+    :root{color-scheme:dark;background:#090d14;color:#eef2f7;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}body{margin:0}.wrap{max-width:1080px;margin:auto;padding:72px 28px 96px}
+    .eyebrow{font:600 13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#8aa4c7}
+    h1{font-size:clamp(46px,8vw,92px);line-height:.94;letter-spacing:-.055em;margin:18px 0 28px;max-width:940px}
+    .lead{font-size:clamp(18px,2.4vw,25px);line-height:1.55;color:#b7c2d1;max-width:820px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin:34px 0 60px}.btn{display:inline-block;padding:12px 16px;border-radius:10px;text-decoration:none;font-weight:650}
+    .primary{background:#eef2f7;color:#090d14}.secondary{border:1px solid #2a3444;color:#eef2f7}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.card{border:1px solid #202938;background:#0d131d;border-radius:14px;padding:22px}
+    .card h2{font-size:16px;margin:0 0 9px}.card p{color:#9eabbd;line-height:1.55;margin:0}
+    .flow{margin-top:56px;padding:24px;border:1px solid #202938;border-radius:14px;background:#0b111a;overflow:auto}
+    pre{margin:0;font:14px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c7d3e3}
+    footer{margin-top:64px;color:#66758a;font-size:13px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="eyebrow">Open research · StarCraft: Brood War</div>
+    <h1>World model first.<br>Agent second.</h1>
+    <p class="lead">A public research project for learning structured game dynamics, imagining future trajectories, and eventually planning actions under partial observability.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/Mrbaeksang/starcraft-ai">View repository</a>
+      <a class="btn secondary" href="https://github.com/Mrbaeksang/starcraft-ai/blob/main/docs/RESEARCH_PLAN.md">Research plan</a>
+      <a class="btn secondary" href="https://github.com/Mrbaeksang/starcraft-ai/issues">Roadmap</a>
+    </div>
+    <section class="grid">
+      <article class="card"><h2>Structured state</h2><p>Units, resources, map structure, visibility, and actions are represented directly instead of reconstructed from broadcast pixels.</p></article>
+      <article class="card"><h2>Predictive world model</h2><p>Learn what follows from a state and action before using the representation for planning.</p></article>
+      <article class="card"><h2>Current replay pipeline</h2><p>GitHub Actions continuously validates bounded high-MMR replay snapshots on current competitive maps.</p></article>
+      <article class="card"><h2>Falsifiable by design</h2><p>Dreamer/RSSM-style baselines, negative controls, multiple seeds, fixed budgets, and held-out evaluation come before frontier claims.</p></article>
+    </section>
+    <section class="flow"><pre>replays → structured transitions → latent dynamics → imagined futures → planning → action
+                         ↑                                      ↓
+                    held-out tests ← baselines / negative controls</pre></section>
+    <footer>Experimental research project. Not affiliated with or endorsed by Blizzard Entertainment.</footer>
+  </main>
+</body>
+</html>
