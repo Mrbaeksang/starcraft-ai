@@ -1,0 +1,81 @@
+name: StarData source probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/stardata-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Probe StarData public endpoints
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set +e
+
+          probe_head() {
+            name="$1"
+            url="$2"
+            echo "## $name" >> artifacts/report.md
+            echo "" >> artifacts/report.md
+            echo "$url" >> artifacts/report.md
+            echo "" >> artifacts/report.md
+            code="$(curl -LIsS --max-time 30 -o "artifacts/$name.headers" -w '%{http_code}' "$url")"
+            status=$?
+            echo "curl_status=$status http_code=$code" >> artifacts/report.md
+            echo "" >> artifacts/report.md
+          }
+
+          probe_head "train-list" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list"
+          probe_head "chunk-0" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz"
+          probe_head "s3-virtual" "https://stardata.s3.amazonaws.com/?list-type=2&max-keys=20"
+          probe_head "s3-path" "https://s3.amazonaws.com/stardata/?list-type=2&max-keys=20"
+
+          curl -LfsS --max-time 30 \
+            "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list" \
+            -o artifacts/train.list
+          echo "train_list_download_status=$?" >> artifacts/report.md
+
+          if [ -s artifacts/train.list ]; then
+            echo "" >> artifacts/report.md
+            echo "## train.list first 30 lines" >> artifacts/report.md
+            echo "BEGIN_TRAIN_LIST" >> artifacts/report.md
+            head -30 artifacts/train.list >> artifacts/report.md
+            echo "END_TRAIN_LIST" >> artifacts/report.md
+          fi
+
+          for base in \
+            "https://stardata.s3.amazonaws.com/?list-type=2&max-keys=20" \
+            "https://s3.amazonaws.com/stardata/?list-type=2&max-keys=20"
+          do
+            curl -LfsS --max-time 30 "$base" -o artifacts/s3-list.xml
+            if [ -s artifacts/s3-list.xml ]; then
+              echo "" >> artifacts/report.md
+              echo "## S3 listing sample" >> artifacts/report.md
+              head -c 8000 artifacts/s3-list.xml >> artifacts/report.md
+              echo "" >> artifacts/report.md
+              break
+            fi
+          done
+
+          cat artifacts/report.md >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+
+      - name: Upload probe report
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: stardata-source-probe
+          path: artifacts/
+          retention-days: 3
+          if-no-files-found: error
