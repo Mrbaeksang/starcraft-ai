@@ -72,3 +72,76 @@ jobs:
           path: artifacts/*.json
           retention-days: 7
           if-no-files-found: error
+
+
+  dynamics-baselines:
+    name: baseline ${{ matrix.model }} / seed ${{ matrix.seed }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 9
+      matrix:
+        model: [mlp, recurrent, jepa]
+        seed: [7, 23, 42]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync CPU environment
+        run: uv sync --locked --extra cpu --group dev
+
+      - name: Run baseline suite
+        run: |
+          mkdir -p artifacts
+          uv run --extra cpu scai benchmark-baseline \
+            --model ${{ matrix.model }} \
+            --steps 30 \
+            --seed ${{ matrix.seed }} \
+            --device cpu \
+            --output artifacts/baseline-${{ matrix.model }}-${{ matrix.seed }}.json
+
+      - name: Publish summary
+        run: |
+          uv run --extra cpu python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+
+          path = next(Path("artifacts").glob("baseline-*.json"))
+          result = json.loads(path.read_text())
+          print(f"## {result['model']} / seed {result['seed']}")
+          print()
+          for key in (
+              "parameters",
+              "first_loss",
+              "final_loss",
+              "reward_mae",
+              "terminal_brier",
+              "probe_economy_mae",
+              "probe_army_mae",
+              "probe_tech_mae",
+              "probe_map_control_mae",
+              "rollout_h1",
+              "rollout_h5",
+              "rollout_h10",
+          ):
+              print(f"- **{key}**: {result[key]}")
+          PY
+
+      - name: Upload baseline metrics
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: baseline-${{ matrix.model }}-${{ matrix.seed }}
+          path: artifacts/*.json
+          retention-days: 7
+          if-no-files-found: error

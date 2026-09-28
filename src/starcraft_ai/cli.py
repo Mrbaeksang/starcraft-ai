@@ -73,6 +73,33 @@ def benchmark_synthetic_command(
     typer.echo(payload)
 
 
+@app.command("benchmark-baseline")
+def benchmark_baseline_command(
+    model: Annotated[str, typer.Option(help="mlp, recurrent, or jepa")] = "jepa",
+    steps: Annotated[int, typer.Option(min=1, max=5_000)] = 30,
+    seed: Annotated[int, typer.Option()] = 7,
+    device: Annotated[str, typer.Option(help="auto, cpu, or cuda")] = "auto",
+    output: Annotated[
+        Path | None,
+        typer.Option(help="Optional JSON result path."),
+    ] = None,
+) -> None:
+    """Compare a dynamics baseline with probes and multi-step rollout metrics."""
+    from starcraft_ai.research_baselines import run_baseline_benchmark
+
+    result = run_baseline_benchmark(
+        model_name=model,
+        steps=steps,
+        seed=seed,
+        device_name=device,
+    )
+    payload = json.dumps(result.to_dict(), indent=2, sort_keys=True)
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(payload + "\n", encoding="utf-8")
+    typer.echo(payload)
+
+
 @app.command("inspect-data")
 def inspect_data_command(
     path: Annotated[Path, typer.Argument(help="TransitionV1 JSONL file.")],

@@ -120,6 +120,18 @@ class LatentWorldModel(nn.Module):
     def encode_target(self, entities: Tensor, entity_mask: Tensor | None = None) -> Tensor:
         return self.target_encoder(entities, entity_mask)
 
+    def predict_from_latent(
+        self,
+        state_latent: Tensor,
+        action_type: Tensor,
+        action_features: Tensor,
+    ) -> Tensor:
+        action_latent = self.action_encoder(action_type, action_features)
+        return F.normalize(
+            self.predictor(torch.cat((state_latent, action_latent), dim=-1)),
+            dim=-1,
+        )
+
     def predict(
         self,
         entities: Tensor,
@@ -128,10 +140,10 @@ class LatentWorldModel(nn.Module):
         entity_mask: Tensor | None = None,
     ) -> dict[str, Tensor]:
         state_latent = self.encode(entities, entity_mask)
-        action_latent = self.action_encoder(action_type, action_features)
-        next_latent = F.normalize(
-            self.predictor(torch.cat((state_latent, action_latent), dim=-1)),
-            dim=-1,
+        next_latent = self.predict_from_latent(
+            state_latent,
+            action_type,
+            action_features,
         )
         return {
             "state_latent": state_latent,
