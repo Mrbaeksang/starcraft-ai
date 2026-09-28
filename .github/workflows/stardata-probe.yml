@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/stardata-probe.yml"
+      - "tools/stardata_reader.cpp"
   workflow_dispatch:
 
 permissions:
@@ -102,6 +103,47 @@ jobs:
           cat artifacts/report.md >> "$GITHUB_STEP_SUMMARY"
           exit 0
 
+      - name: Checkout TorchCraft source
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: TorchCraft/TorchCraft
+          ref: 8f09ba0a8425b172b1c2700f242afa24336e7237
+          path: external/torchcraft
+
+      - name: Build standalone StarData reader
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libzstd-dev
+          g++ -std=c++17 -O2 -DWITH_ZSTD \
+            -I external/torchcraft/include \
+            -I external/torchcraft/replayer \
+            -I external/torchcraft/BWEnv/fbs \
+            tools/stardata_reader.cpp \
+            external/torchcraft/replayer/replayer.cpp \
+            external/torchcraft/replayer/frame.cpp \
+            external/torchcraft/replayer/frame_serialization.cpp \
+            external/torchcraft/replayer/frame_diff.cpp \
+            external/torchcraft/replayer/frame_diff_serialization.cpp \
+            -lzstd \
+            -o artifacts/stardata-reader
+
+      - name: Parse extracted StarData sample
+        shell: bash
+        run: |
+          test -s artifacts/sample.tcr
+          artifacts/stardata-reader artifacts/sample.tcr | tee artifacts/sample-summary.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path("artifacts/sample-summary.json").read_text())
+          assert data["frames"] > 0
+          assert len(data["player_ids"]) >= 2
+          assert data["first"]["units"] > 0
+          assert data["last"]["units"] > 0
+          print(json.dumps(data, indent=2))
+          PY
       - name: Upload probe report
         uses: actions/upload-artifact@v7.0.1
         with:
