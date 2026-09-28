@@ -276,11 +276,7 @@ def run_baseline_benchmark(
         )
 
     elapsed = time.perf_counter() - started
-    peak_memory = (
-        int(torch.cuda.max_memory_allocated(device))
-        if device.type == "cuda"
-        else 0
-    )
+    peak_memory = int(torch.cuda.max_memory_allocated(device)) if device.type == "cuda" else 0
 
     return BaselineBenchmarkResult(
         model=model_name,

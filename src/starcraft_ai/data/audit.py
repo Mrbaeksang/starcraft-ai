@@ -82,9 +82,7 @@ def audit_jsonl(path: Path) -> DatasetAuditResult:
                     visible_enemy += 1
                 else:
                     if unit.position_source != "last_seen" or unit.last_seen_frame is None:
-                        raise ValueError(
-                            "hidden enemy state leaked a non-last-seen position"
-                        )
+                        raise ValueError("hidden enemy state leaked a non-last-seen position")
                     hidden_enemy += 1
 
     return DatasetAuditResult(
