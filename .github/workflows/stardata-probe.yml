@@ -152,7 +152,9 @@ jobs:
         shell: bash
         run: |
           test -s artifacts/sample.tcr
-          artifacts/stardata-reader artifacts/sample.tcr | tee artifacts/sample-summary.json
+          artifacts/stardata-reader artifacts/sample.tcr \
+            --frames-jsonl artifacts/sample-states.jsonl \
+            | tee artifacts/sample-summary.json
           python - <<'PY'
           import json
           from pathlib import Path
@@ -164,7 +166,25 @@ jobs:
           assert data["first_nonempty_frame"] >= 0
           assert data["order_events"] > 0
           assert data["last"]["units"] > 0
-          print(json.dumps(data, indent=2))
+
+          states = [
+              json.loads(line)
+              for line in Path("artifacts/sample-states.jsonl").read_text().splitlines()
+              if line
+          ]
+          assert len(states) == data["frames"]
+          assert states[0]["sample_index"] == 0
+          assert states[-1]["sample_index"] == data["frames"] - 1
+          assert states[100]["approx_game_frame"] == 300
+          assert any(state["units"] for state in states)
+          assert any(state["resources"] for state in states)
+          print(json.dumps({
+              "summary": data,
+              "state_rows": len(states),
+              "first_nonempty_state": next(
+                  state["sample_index"] for state in states if state["units"]
+              ),
+          }, indent=2))
           PY
       - name: Parse paired original replay
         shell: bash
