@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from dataclasses import asdict, dataclass
 
 import torch
@@ -35,6 +36,8 @@ class BaselineBenchmarkResult:
     rollout_h1: float
     rollout_h5: float
     rollout_h10: float
+    elapsed_seconds: float
+    peak_memory_bytes: int
 
     def to_dict(self) -> dict[str, float | int | str]:
         return asdict(self)
@@ -211,6 +214,9 @@ def run_baseline_benchmark(
     config = baseline_config()
     model = _make_model(model_name, config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
+    started = time.perf_counter()
 
     train_batch = _with_terminal_labels(
         make_synthetic_batch(
@@ -269,6 +275,13 @@ def run_baseline_benchmark(
             device=device,
         )
 
+    elapsed = time.perf_counter() - started
+    peak_memory = (
+        int(torch.cuda.max_memory_allocated(device))
+        if device.type == "cuda"
+        else 0
+    )
+
     return BaselineBenchmarkResult(
         model=model_name,
         seed=seed,
@@ -285,4 +298,6 @@ def run_baseline_benchmark(
         rollout_h1=rollout[1],
         rollout_h5=rollout[5],
         rollout_h10=rollout[10],
+        elapsed_seconds=elapsed,
+        peak_memory_bytes=peak_memory,
     )
