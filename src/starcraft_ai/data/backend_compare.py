@@ -266,7 +266,10 @@ def compare_backends(
 
     failures: list[str] = []
     checks = (
-        (metrics["aligned_actions"] >= active_policy.min_aligned_actions, "too few aligned actions"),
+        (
+            metrics["aligned_actions"] >= active_policy.min_aligned_actions,
+            "too few aligned actions",
+        ),
         (
             metrics["reference_action_alignment"] >= active_policy.min_action_alignment,
             "reference action alignment below threshold",
