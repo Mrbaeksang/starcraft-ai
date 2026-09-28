@@ -1,0 +1,100 @@
+name: BWAPI collector
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "collector/bwapi/**"
+      - "src/starcraft_ai/data/**"
+      - ".github/workflows/bwapi-collector.yml"
+  pull_request:
+    paths:
+      - "collector/bwapi/**"
+      - "src/starcraft_ai/data/**"
+      - ".github/workflows/bwapi-collector.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v7.0.1
+
+      - name: Checkout BWAPI 4.4.0
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: bwapi/bwapi
+          ref: v4.4.0
+          path: external/bwapi
+
+      - name: Configure MSVC x86
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Compile BWAPI runtime collector translation unit
+        shell: cmd
+        run: >
+          cl /nologo /std:c++17 /EHsc /W4
+          /I external\bwapi\bwapi\include
+          /I collector\bwapi\include
+          /c collector\bwapi\src\main.cpp
+          /Fo:collector\bwapi\main.obj
+
+      - name: Build contract self-test
+        shell: cmd
+        run: >
+          cl /nologo /std:c++17 /EHsc /W4
+          /I collector\bwapi\include
+          collector\bwapi\src\self_test.cpp
+          /Fe:collector-selftest.exe
+
+      - name: Emit TransitionV1 self-test shard
+        shell: cmd
+        run: |
+          mkdir artifacts
+          collector-selftest.exe --output artifacts\collector-selftest.jsonl
+
+      - name: Upload self-test shard
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: bwapi-collector-contract
+          path: artifacts/collector-selftest.jsonl
+          retention-days: 3
+          if-no-files-found: error
+
+  validate-contract-linux:
+    needs: compile-windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Download collector shard
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: bwapi-collector-contract
+          path: artifacts
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.19"
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Sync CPU environment
+        run: uv sync --locked --extra cpu --group dev
+
+      - name: Validate TransitionV1 output
+        run: uv run --extra cpu scai inspect-data artifacts/collector-selftest.jsonl
