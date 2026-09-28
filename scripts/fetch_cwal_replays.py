@@ -10,7 +10,6 @@ from typing import Any
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
-
 API_BASE = "https://api.aws.cwal.gg"
 DEFAULT_MATCHUPS = ("ZvT", "ZvP", "TvP", "ZvZ", "TvT", "PvP")
 
