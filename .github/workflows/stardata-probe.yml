@@ -165,6 +165,40 @@ jobs:
           assert data["last"]["units"] > 0
           print(json.dumps(data, indent=2))
           PY
+      - name: Parse paired original replay
+        shell: bash
+        run: |
+          test -s artifacts/paired.rep
+          cargo build --release --manifest-path extractor/headless/Cargo.toml
+          extractor/headless/target/release/scai-headless-extractor \
+            --replay artifacts/paired.rep \
+            --output artifacts/paired-transitions.jsonl \
+            --manifest artifacts/paired-replay-manifest.json \
+            --synthetic \
+            --max-frames 3000
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          sample = json.loads(Path("artifacts/sample-summary.json").read_text())
+          manifest = json.loads(Path("artifacts/paired-replay-manifest.json").read_text())
+          expected = sample["frames"] * 3
+          delta = abs(manifest["replay_frames"] - expected)
+          result = {
+              "tcr_frames": sample["frames"],
+              "expected_rep_frames": expected,
+              "rep_frames": manifest["replay_frames"],
+              "frame_delta": delta,
+              "replay_commands": manifest["replay_commands"],
+              "emitted_actions": manifest["emitted_actions"],
+              "map_name": manifest["map_name"],
+          }
+          Path("artifacts/pair-check.json").write_text(json.dumps(result, indent=2) + "\n")
+          print(json.dumps(result, indent=2))
+          assert manifest["replay_commands"] > 0
+          assert manifest["emitted_actions"] > 0
+          assert delta <= 12
+          PY
       - name: Upload probe report
         uses: actions/upload-artifact@v7.0.1
         with:
