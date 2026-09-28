@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "dataset_id": "synthetic-transition-v1",
+  "format": "transition-jsonl-v1",
+  "transition_count": 2,
+  "episodes": [
+    {
+      "schema_version": 1,
+      "episode_id": "synthetic-fixture-001",
+      "source": "synthetic",
+      "map_name": "SyntheticFixture",
+      "player_id": 0,
+      "race": "Terran",
+      "opponent_race": "Protoss",
+      "observability": "player",
+      "replay_sha256": null
+    }
+  ],
+  "files": [
+    {
+      "path": "transitions_v1.jsonl",
+      "bytes": 3211,
+      "sha256": "1965e01456cedfd028caccb4ff1440a716d72d50489eb4d2f983a2c4462f52b5",
+      "transitions": 2
+    }
+  ]
+}
