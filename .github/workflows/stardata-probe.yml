@@ -39,12 +39,18 @@ jobs:
 
           probe_head "train-list" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list"
           probe_head "chunk-0" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz"
+          probe_head "direct-first-tcr" "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0/bwrep_065pa.tcr"
           probe_head "s3-virtual" "https://stardata.s3.amazonaws.com/?list-type=2&max-keys=20"
           probe_head "s3-path" "https://s3.amazonaws.com/stardata/?list-type=2&max-keys=20"
 
           curl -LfsS --max-time 30 \
             "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list" \
             -o artifacts/train.list
+
+          curl -LfsS --max-time 60 \
+            "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0/bwrep_065pa.tcr" \
+            -o artifacts/first.tcr
+          echo "direct_tcr_download_status=$? size=$(wc -c < artifacts/first.tcr 2>/dev/null || echo 0)" >> artifacts/report.md
           echo "train_list_download_status=$?" >> artifacts/report.md
 
           if [ -s artifacts/train.list ]; then
