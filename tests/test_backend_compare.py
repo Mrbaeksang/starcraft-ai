@@ -3,7 +3,6 @@ from pathlib import Path
 
 from starcraft_ai.data.backend_compare import BackendComparisonPolicy, compare_backends
 
-
 FIXTURE = Path("tests/fixtures/transitions_v1.jsonl")
 
 
