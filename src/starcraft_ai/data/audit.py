@@ -100,7 +100,10 @@ def audit_jsonl(path: Path) -> DatasetAuditResult:
     )
 
 
-def compare_extractions(first: Path, second: Path) -> tuple[bool, DatasetAuditResult, DatasetAuditResult]:
+def compare_extractions(
+    first: Path,
+    second: Path,
+) -> tuple[bool, DatasetAuditResult, DatasetAuditResult]:
     first_audit = audit_jsonl(first)
     second_audit = audit_jsonl(second)
     identical = (
