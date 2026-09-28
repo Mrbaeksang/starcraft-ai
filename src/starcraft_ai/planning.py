@@ -71,10 +71,7 @@ class WorldModelSequenceScorer:
         if uncertainty_penalty < 0:
             raise ValueError("uncertainty_penalty must be non-negative")
 
-        latents = [
-            initial_state.unsqueeze(0).expand(population, -1).clone()
-            for _ in self.models
-        ]
+        latents = [initial_state.unsqueeze(0).expand(population, -1).clone() for _ in self.models]
         total = torch.zeros(population, device=initial_state.device)
         weight = 1.0
 
@@ -248,9 +245,9 @@ def cem_plan(
             generator=generator,
             device=initial_state.device,
         )
-        sampled_features = (
-            feature_mean.unsqueeze(0) + feature_std.unsqueeze(0) * noise
-        ).clamp(-1.0, 1.0)
+        sampled_features = (feature_mean.unsqueeze(0) + feature_std.unsqueeze(0) * noise).clamp(
+            -1.0, 1.0
+        )
 
         scores = scorer.score(
             initial_state,
@@ -268,9 +265,7 @@ def cem_plan(
                 elite_types[:, step],
                 minlength=scorer.action_types,
             ).float()
-            type_probabilities[step] = (counts + 0.5) / (
-                counts.sum() + 0.5 * scorer.action_types
-            )
+            type_probabilities[step] = (counts + 0.5) / (counts.sum() + 0.5 * scorer.action_types)
 
         feature_mean = elite_features.mean(dim=0)
         feature_std = elite_features.std(dim=0, unbiased=False).clamp_min(0.05)
