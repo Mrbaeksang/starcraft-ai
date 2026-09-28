@@ -5,6 +5,7 @@ on:
     paths:
       - ".github/workflows/stardata-probe.yml"
       - "tools/stardata_reader.cpp"
+      - "extractor/headless/src/bin/replay_actions.rs"
   workflow_dispatch:
 
 permissions:
@@ -198,6 +199,47 @@ jobs:
           assert manifest["replay_commands"] > 0
           assert manifest["emitted_actions"] > 0
           assert delta <= 12
+          PY
+      - name: Dump paired replay actions
+        shell: bash
+        run: |
+          cargo run --release --manifest-path extractor/headless/Cargo.toml \
+            --bin replay_actions -- \
+            --replay artifacts/paired.rep \
+            --output artifacts/paired-actions.jsonl
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          rows = [
+              json.loads(line)
+              for line in Path("artifacts/paired-actions.jsonl").read_text().splitlines()
+              if line
+          ]
+          assert len(rows) > 300
+          assert all(row["frame"] >= 0 for row in rows)
+          assert all("selected_unit_tags" in row for row in rows)
+          assert any(row["selected_unit_tags"] for row in rows)
+
+          players = sorted({row["player_id"] for row in rows})
+          kinds = {}
+          for row in rows:
+              command = row["command"]
+              kind = next(iter(command)) if isinstance(command, dict) else str(command)
+              kinds[kind] = kinds.get(kind, 0) + 1
+
+          summary = {
+              "actions": len(rows),
+              "players": players,
+              "first_frame": rows[0]["frame"],
+              "last_frame": rows[-1]["frame"],
+              "actions_with_selected_units": sum(bool(row["selected_unit_tags"]) for row in rows),
+              "command_kinds": kinds,
+          }
+          Path("artifacts/paired-actions-summary.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n"
+          )
+          print(json.dumps(summary, indent=2, sort_keys=True))
           PY
       - name: Upload probe report
         uses: actions/upload-artifact@v7.0.1
