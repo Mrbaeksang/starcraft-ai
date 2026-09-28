@@ -1,0 +1,124 @@
+name: Current high-MMR replay snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      mmr_min:
+        description: Minimum CWAL replay-vault MMR bucket
+        required: true
+        default: "2400"
+        type: string
+      max_replays:
+        description: Maximum raw replays to download
+        required: true
+        default: "12"
+        type: string
+  schedule:
+    - cron: "23 19 * * 3"
+  push:
+    branches: [main]
+    paths:
+      - scripts/fetch_cwal_replays.py
+      - data/sources/major_proleague_2026-09-17.json
+      - .github/workflows/replay-snapshot.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: current-replay-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Resolve bounded inputs
+        id: inputs
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_MMR: ${{ inputs.mmr_min }}
+          INPUT_MAX: ${{ inputs.max_replays }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            MMR="$INPUT_MMR"
+            MAX="$INPUT_MAX"
+          else
+            MMR="2400"
+            MAX="12"
+          fi
+
+          if ! [[ "$MMR" =~ ^[0-9]+$ ]] || (( MMR < 800 || MMR >= 2900 )); then
+            echo "invalid mmr_min: $MMR" >&2
+            exit 2
+          fi
+          if ! [[ "$MAX" =~ ^[0-9]+$ ]] || (( MAX < 1 || MAX > 40 )); then
+            echo "invalid max_replays: $MAX" >&2
+            exit 2
+          fi
+
+          echo "mmr=$MMR" >> "$GITHUB_OUTPUT"
+          echo "max=$MAX" >> "$GITHUB_OUTPUT"
+
+      - name: Download latest high-MMR replays from CWAL
+        run: |
+          python scripts/fetch_cwal_replays.py \
+            --output-dir artifacts/current-replays \
+            --mmr-min ${{ steps.inputs.outputs.mmr }} \
+            --mmr-max 2900 \
+            --max-replays ${{ steps.inputs.outputs.max }}
+
+      - name: Validate snapshot
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(
+              Path("artifacts/current-replays/manifest.json").read_text(encoding="utf-8")
+          )
+          replays = manifest["replays"]
+          if not replays:
+              raise SystemExit("CWAL snapshot returned zero replay files")
+          for replay in replays:
+              path = Path("artifacts/current-replays") / replay["file"]
+              if not path.exists() or path.stat().st_size != replay["bytes"]:
+                  raise SystemExit(f"snapshot validation failed: {path}")
+          print(f"validated {len(replays)} replay files")
+          PY
+
+      - name: Summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+
+          data = json.loads(
+              Path("artifacts/current-replays/manifest.json").read_text(encoding="utf-8")
+          )
+          print("# Current high-MMR replay snapshot")
+          print()
+          print(f"MMR bucket: {data['mmr_min']}–{data['mmr_max']}")
+          print()
+          print("| map | matchup | bytes | match id |")
+          print("|---|---|---:|---|")
+          for item in data["replays"]:
+              print(
+                  f"| {item['requested_map']} | {item['matchup']} | "
+                  f"{item['bytes']:,} | `{item['match_id']}` |"
+              )
+          PY
+
+      - name: Upload replay snapshot
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: current-high-mmr-replays
+          path: artifacts/current-replays/
+          retention-days: 3
+          if-no-files-found: error

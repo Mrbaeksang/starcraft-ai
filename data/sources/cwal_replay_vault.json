@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "current_replay_source",
+  "name": "CWAL Replay Vault",
+  "site": "https://cwal.gg/replays",
+  "api_base": "https://api.aws.cwal.gg",
+  "auth_required": false,
+  "intended_use": "bounded current-distribution replay acquisition for research",
+  "default_mmr_min": 2400,
+  "max_known_mmr": 2900,
+  "endpoints": {
+    "maps": "/api/vault/maps",
+    "vault": "/api/vault?matchup=<matchup>&map=<map>&limit=100&mmrLo=<lo>&mmrHi=<hi>",
+    "replay_file": "/api/replay/<matchId>/file"
+  },
+  "notes": [
+    "CWAL exposes recent StarCraft: Remastered ladder replays and raw replay downloads.",
+    "Use this for current high-skill ladder distribution on current competitive maps.",
+    "Do not label these games as official proleague matches unless independent event/player evidence proves that.",
+    "Raw CWAL replays are kept as short-lived CI artifacts by default rather than committed to Git."
+  ],
+  "verified_at": "2026-09-28"
+}
