@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: "17 18 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/starcraft_ai/models/**"
+      - "src/starcraft_ai/evaluation.py"
+      - "src/starcraft_ai/research_baselines.py"
+      - ".github/workflows/nightly.yml"
 
 permissions:
   contents: read
@@ -134,6 +141,8 @@ jobs:
               "rollout_h1",
               "rollout_h5",
               "rollout_h10",
+              "elapsed_seconds",
+              "peak_memory_bytes",
           ):
               print(f"- **{key}**: {result[key]}")
           PY
