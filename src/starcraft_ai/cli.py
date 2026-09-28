@@ -135,5 +135,73 @@ def pack_data_command(
     typer.echo(f"packed {count} transitions -> {output_path}")
 
 
+@app.command("audit-data")
+def audit_data_command(
+    path: Annotated[Path, typer.Argument(help="TransitionV1 JSONL file.")],
+) -> None:
+    """Audit ordering, observability safety, and canonical hashes."""
+    from starcraft_ai.data.audit import audit_jsonl, audit_to_dict
+
+    typer.echo(json.dumps(audit_to_dict(audit_jsonl(path)), indent=2, sort_keys=True))
+
+
+@app.command("benchmark-data")
+def benchmark_data_command(
+    path: Annotated[Path, typer.Argument(help="TransitionV1 JSONL file.")],
+    repeats: Annotated[int, typer.Option(min=1, max=100)] = 3,
+) -> None:
+    """Measure validated JSONL loader throughput."""
+    from starcraft_ai.data.audit import benchmark_loader, benchmark_to_dict
+
+    result = benchmark_loader(path, repeats=repeats)
+    typer.echo(json.dumps(benchmark_to_dict(result), indent=2, sort_keys=True))
+
+
+@app.command("compare-extractions")
+def compare_extractions_command(
+    first: Annotated[Path, typer.Argument(help="First TransitionV1 JSONL.")],
+    second: Annotated[Path, typer.Argument(help="Second TransitionV1 JSONL.")],
+) -> None:
+    """Compare two independently generated extraction outputs canonically."""
+    from starcraft_ai.data.audit import compare_extractions
+
+    identical, first_audit, second_audit = compare_extractions(first, second)
+    payload = {
+        "identical": identical,
+        "first_canonical_sha256": first_audit.canonical_sha256,
+        "second_canonical_sha256": second_audit.canonical_sha256,
+        "first_transitions": first_audit.transitions,
+        "second_transitions": second_audit.transitions,
+    }
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+    if not identical:
+        raise typer.Exit(code=1)
+
+
+@app.command("split-data")
+def split_data_command(
+    path: Annotated[Path, typer.Argument(help="TransitionV1 JSONL file.")],
+    output: Annotated[Path, typer.Argument(help="JSON split manifest output.")],
+    seed: Annotated[int, typer.Option()] = 7,
+) -> None:
+    """Create deterministic episode-level split assignments."""
+    from starcraft_ai.data import iter_jsonl_v1
+    from starcraft_ai.data.audit import episode_split
+
+    transitions = list(iter_jsonl_v1(path))
+    assignments = episode_split([item.episode_id for item in transitions], seed=seed)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps(
+            {"schema_version": 1, "seed": seed, "episodes": assignments},
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    typer.echo(f"wrote {len(assignments)} episode assignments -> {output}")
+
+
 if __name__ == "__main__":
     app()
