@@ -39,7 +39,7 @@ def test_actions_align_to_surrounding_sampled_states(tmp_path: Path) -> None:
 
     assert result.aligned_actions == 3
     assert result.max_before_gap == 2
-    assert result.max_after_gap == 2
+    assert result.max_after_gap == 3
     assert rows[0]["state_sample_index"] == 0
     assert rows[0]["next_state_sample_index"] == 1
     assert rows[1]["state_sample_index"] == 1
