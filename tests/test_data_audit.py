@@ -10,7 +10,6 @@ from starcraft_ai.data.audit import (
     episode_split,
 )
 
-
 FIXTURE = Path("tests/fixtures/transitions_v1.jsonl")
 
 
