@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <iostream>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -112,6 +113,9 @@ int main(int argc, char** argv) {
 
     std::size_t total_actions = 0;
     std::size_t frames_with_actions = 0;
+    std::set<std::string> unit_command_events;
+    std::set<int32_t> unit_command_frames;
+    std::set<std::string> order_events;
     std::size_t max_units = 0;
     std::size_t first_nonempty_frame = replay.size();
 
@@ -124,6 +128,33 @@ int main(int argc, char** argv) {
       for (const auto& [player_id, units] : frame->units) {
         player_ids.insert(player_id);
         frame_units += units.size();
+
+        for (const auto& unit : units) {
+          if (unit.command.type >= 0 && unit.command.type < 44) {
+            std::ostringstream key;
+            key << player_id << "|"
+                << unit.command.frame << "|"
+                << unit.command.type << "|"
+                << unit.command.targetId << "|"
+                << unit.command.targetX << "|"
+                << unit.command.targetY << "|"
+                << unit.command.extra;
+            unit_command_events.insert(key.str());
+            unit_command_frames.insert(unit.command.frame);
+          }
+
+          for (const auto& order : unit.orders) {
+            std::ostringstream key;
+            key << player_id << "|"
+                << unit.id << "|"
+                << order.first_frame << "|"
+                << order.type << "|"
+                << order.targetId << "|"
+                << order.targetX << "|"
+                << order.targetY;
+            order_events.insert(key.str());
+          }
+        }
       }
       max_units = std::max(max_units, frame_units);
       if (frame_units > 0 && first_nonempty_frame == replay.size()) {
@@ -150,6 +181,9 @@ int main(int argc, char** argv) {
     std::cout << "\"map_height\":" << replay.mapHeight() << ",";
     std::cout << "\"total_actions\":" << total_actions << ",";
     std::cout << "\"frames_with_actions\":" << frames_with_actions << ",";
+    std::cout << "\"unit_command_events\":" << unit_command_events.size() << ",";
+    std::cout << "\"unit_command_frames\":" << unit_command_frames.size() << ",";
+    std::cout << "\"order_events\":" << order_events.size() << ",";
     std::cout << "\"max_units\":" << max_units << ",";
     std::cout << "\"first_nonempty_frame\":"
               << (first_nonempty_frame == replay.size() ? -1 : static_cast<long long>(first_nonempty_frame))
