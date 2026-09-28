@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -43,6 +44,120 @@ FrameSummary summarize_frame(
     ++summary.resource_players;
   }
   return summary;
+}
+
+
+void write_state_jsonl(
+    const torchcraft::replayer::Replayer& replay,
+    const std::string& output_path) {
+  std::ofstream out(output_path);
+  if (!out.good()) {
+    throw std::runtime_error("cannot open state JSONL output");
+  }
+
+  for (std::size_t index = 0; index < replay.size(); ++index) {
+    const auto* frame = replay.getFrame(index);
+    if (!frame) {
+      continue;
+    }
+
+    std::vector<int32_t> resource_players;
+    resource_players.reserve(frame->resources.size());
+    for (const auto& [player_id, resources] : frame->resources) {
+      (void)resources;
+      resource_players.push_back(player_id);
+    }
+    std::sort(resource_players.begin(), resource_players.end());
+
+    std::vector<int32_t> unit_players;
+    unit_players.reserve(frame->units.size());
+    for (const auto& [player_id, units] : frame->units) {
+      (void)units;
+      unit_players.push_back(player_id);
+    }
+    std::sort(unit_players.begin(), unit_players.end());
+
+    out << "{";
+    out << "\"schema_version\":1,";
+    out << "\"sample_index\":" << index << ",";
+    out << "\"approx_game_frame\":" << (index * 3) << ",";
+    out << "\"map_width\":" << replay.mapWidth() << ",";
+    out << "\"map_height\":" << replay.mapHeight() << ",";
+    out << "\"is_terminal\":" << (frame->is_terminal ? "true" : "false") << ",";
+
+    out << "\"resources\":[";
+    bool first_resource = true;
+    for (const auto player_id : resource_players) {
+      const auto& resources = frame->resources.at(player_id);
+      if (!first_resource) {
+        out << ",";
+      }
+      first_resource = false;
+      out
+          << "{\"player_id\":" << player_id
+          << ",\"minerals\":" << resources.ore
+          << ",\"gas\":" << resources.gas
+          << ",\"supply_used\":" << resources.used_psi
+          << ",\"supply_total\":" << resources.total_psi
+          << ",\"upgrades\":" << resources.upgrades
+          << ",\"upgrade_levels\":" << resources.upgrades_level
+          << ",\"techs\":" << resources.techs
+          << "}";
+    }
+    out << "],";
+
+    out << "\"units\":[";
+    bool first_unit = true;
+    for (const auto player_id : unit_players) {
+      auto units = frame->units.at(player_id);
+      std::sort(
+          units.begin(),
+          units.end(),
+          [](const torchcraft::replayer::Unit& left,
+             const torchcraft::replayer::Unit& right) {
+            return left.id < right.id;
+          });
+
+      for (const auto& unit : units) {
+        if (!first_unit) {
+          out << ",";
+        }
+        first_unit = false;
+
+        int order_type = -1;
+        int order_target_id = -1;
+        int order_target_x = -1;
+        int order_target_y = -1;
+        if (!unit.orders.empty()) {
+          const auto& order = unit.orders.back();
+          order_type = order.type;
+          order_target_id = order.targetId;
+          order_target_x = order.targetX;
+          order_target_y = order.targetY;
+        }
+
+        out
+            << "{\"player_id\":" << player_id
+            << ",\"unit_id\":" << unit.id
+            << ",\"type_id\":" << unit.type
+            << ",\"x\":" << unit.x
+            << ",\"y\":" << unit.y
+            << ",\"pixel_x\":" << unit.pixel_x
+            << ",\"pixel_y\":" << unit.pixel_y
+            << ",\"hp\":" << unit.health
+            << ",\"hp_max\":" << unit.max_health
+            << ",\"shield\":" << unit.shield
+            << ",\"energy\":" << unit.energy
+            << ",\"visible\":" << unit.visible
+            << ",\"order_type\":" << order_type
+            << ",\"order_target_id\":" << order_target_id
+            << ",\"order_target_x\":" << order_target_x
+            << ",\"order_target_y\":" << order_target_y
+            << "}";
+      }
+    }
+    out << "]}\n";
+  }
 }
 
 void print_frame_summary(const char* label, const FrameSummary& summary) {
@@ -88,9 +203,17 @@ void print_resources(
 
 int main(int argc, char** argv) {
   try {
-    if (argc != 2) {
-      std::cerr << "usage: stardata-reader FILE.tcr\n";
+    if (argc != 2 && argc != 4) {
+      std::cerr << "usage: stardata-reader FILE.tcr [--frames-jsonl OUTPUT]\n";
       return 2;
+    }
+
+    std::string frames_jsonl;
+    if (argc == 4) {
+      if (std::string(argv[2]) != "--frames-jsonl") {
+        throw std::runtime_error("expected --frames-jsonl");
+      }
+      frames_jsonl = argv[3];
     }
 
     torchcraft::replayer::Replayer replay;
@@ -211,6 +334,12 @@ int main(int argc, char** argv) {
     std::cout << ",";
     print_resources("last", replay.getFrame(last_index));
     std::cout << "}\n";
+
+    if (!frames_jsonl.empty()) {
+      write_state_jsonl(replay, frames_jsonl);
+      std::cerr << "wrote " << replay.size()
+                << " sampled states to " << frames_jsonl << "\n";
+    }
     return 0;
   } catch (const std::exception& error) {
     std::cerr << "stardata-reader error: " << error.what() << "\n";
