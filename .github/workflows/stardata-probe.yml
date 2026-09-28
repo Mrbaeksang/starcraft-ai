@@ -268,9 +268,16 @@ jobs:
           import json
           from pathlib import Path
 
-          from starcraft_ai.data.stardata_align import align_stardata_actions
+          import importlib.util
+          import sys
 
-          result = align_stardata_actions(
+          module_path = Path("src/starcraft_ai/data/stardata_align.py")
+          spec = importlib.util.spec_from_file_location("stardata_align_probe", module_path)
+          module = importlib.util.module_from_spec(spec)
+          sys.modules[spec.name] = module
+          spec.loader.exec_module(module)
+
+          result = module.align_stardata_actions(
               Path("artifacts/sample-states.jsonl"),
               Path("artifacts/paired-actions.jsonl"),
               Path("artifacts/aligned-actions.jsonl"),
