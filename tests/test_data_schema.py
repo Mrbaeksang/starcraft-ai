@@ -27,9 +27,7 @@ def test_fixture_round_trips_canonically() -> None:
 
 
 def test_fixture_manifest_hash_matches() -> None:
-    manifest = json.loads(
-        (FIXTURES / "transitions_v1.manifest.json").read_text(encoding="utf-8")
-    )
+    manifest = json.loads((FIXTURES / "transitions_v1.manifest.json").read_text(encoding="utf-8"))
     payload = FIXTURES / manifest["files"][0]["path"]
 
     assert payload.stat().st_size == manifest["files"][0]["bytes"]
