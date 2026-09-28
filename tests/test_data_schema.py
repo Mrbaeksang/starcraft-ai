@@ -11,7 +11,6 @@ from starcraft_ai.data import (
     sha256_file,
 )
 
-
 FIXTURES = Path("tests/fixtures")
 
 

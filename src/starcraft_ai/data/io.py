@@ -10,7 +10,6 @@ import numpy as np
 
 from starcraft_ai.data.schema import EpisodeMetadataV1, TransitionV1
 
-
 ACTION_INDEX = {
     "NOOP": 0,
     "MOVE": 1,

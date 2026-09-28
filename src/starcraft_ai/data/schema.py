@@ -6,7 +6,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Literal
 
-
 SCHEMA_VERSION = 1
 OwnerRelation = Literal["self", "enemy", "neutral"]
 PositionSource = Literal["current", "last_seen"]
