@@ -5,10 +5,10 @@ import hashlib
 import json
 import re
 import time
-import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote, urlencode
+from urllib.request import Request, urlopen
 
 
 API_BASE = "https://api.aws.cwal.gg"
@@ -34,23 +34,23 @@ def parse_args() -> argparse.Namespace:
 
 
 def fetch_json(url: str) -> dict[str, Any]:
-    request = urllib.request.Request(
+    request = Request(
         url,
         headers={
             "Accept": "application/json",
             "User-Agent": "starcraft-ai-research/0.1",
         },
     )
-    with urllib.request.urlopen(request, timeout=60) as response:
+    with urlopen(request, timeout=60) as response:
         return json.load(response)
 
 
 def fetch_bytes(url: str) -> bytes:
-    request = urllib.request.Request(
+    request = Request(
         url,
         headers={"User-Agent": "starcraft-ai-research/0.1"},
     )
-    with urllib.request.urlopen(request, timeout=120) as response:
+    with urlopen(request, timeout=120) as response:
         return response.read()
 
 
@@ -92,7 +92,7 @@ def resolve_map(requested: str, available: list[str]) -> str:
 
 
 def vault_page(map_file: str, matchup: str, mmr_min: int, mmr_max: int) -> list[dict[str, Any]]:
-    query = urllib.parse.urlencode(
+    query = urlencode(
         {
             "matchup": matchup,
             "map": map_file,
@@ -172,7 +172,7 @@ def main() -> None:
     records: list[dict[str, Any]] = []
     for replay in ordered:
         match_id = str(replay["matchId"])
-        url = f"{API_BASE}/api/replay/{urllib.parse.quote(match_id, safe='')}/file"
+        url = f"{API_BASE}/api/replay/{quote(match_id, safe='')}/file"
         payload = fetch_bytes(url)
         if len(payload) < 1024:
             raise RuntimeError(f"replay {match_id} is unexpectedly small ({len(payload)} bytes)")
