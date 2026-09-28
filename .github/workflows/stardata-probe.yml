@@ -101,7 +101,7 @@ jobs:
 
           echo "" >> artifacts/report.md
           echo "## original replay pair probe" >> artifacts/report.md
-          original_meta="$(curl -LfsS --max-time 60 --range 0-67108863 --max-filesize 70000000 -o artifacts/original-prefix.tar.gz -w 'code=%{http_code} bytes=%{size_download}' "https://dl.fbaipublicfiles.com/stardata/original_replays.tar.gz")"
+          original_meta="$(curl -LfsS --max-time 90 --range 0-134217727 --max-filesize 140000000 -o artifacts/original-prefix.tar.gz -w 'code=%{http_code} bytes=%{size_download}' "https://dl.fbaipublicfiles.com/stardata/original_replays.tar.gz")"
           original_status=$?
           echo "original_range_status=$original_status $original_meta" >> artifacts/report.md
           if [ "$original_status" -eq 0 ] && echo "$original_meta" | grep -q "code=206"; then
