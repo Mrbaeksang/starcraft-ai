@@ -203,5 +203,44 @@ def split_data_command(
     typer.echo(f"wrote {len(assignments)} episode assignments -> {output}")
 
 
+@app.command("train-data")
+def train_data_command(
+    paths: Annotated[
+        list[Path],
+        typer.Argument(help="One or more TransitionV1 JSONL files."),
+    ],
+    model: Annotated[str, typer.Option(help="mlp, recurrent, or jepa")] = "jepa",
+    steps: Annotated[int, typer.Option(min=1, max=100_000)] = 100,
+    batch_size: Annotated[int, typer.Option(min=1, max=4096)] = 64,
+    seed: Annotated[int, typer.Option()] = 7,
+    device: Annotated[str, typer.Option(help="auto, cpu, or cuda")] = "auto",
+    allow_single_episode_smoke: Annotated[
+        bool,
+        typer.Option(help="Allow a non-claimable single/few-episode pipeline smoke run."),
+    ] = False,
+    output: Annotated[
+        Path | None,
+        typer.Option(help="Optional JSON result path."),
+    ] = None,
+) -> None:
+    """Train a baseline/world model directly from TransitionV1 data."""
+    from starcraft_ai.transition_training import train_transition_dataset
+
+    result = train_transition_dataset(
+        paths,
+        model_name=model,
+        steps=steps,
+        batch_size=batch_size,
+        seed=seed,
+        device_name=device,
+        allow_single_episode_smoke=allow_single_episode_smoke,
+    )
+    payload = json.dumps(result.to_dict(), indent=2, sort_keys=True)
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(payload + "\n", encoding="utf-8")
+    typer.echo(payload)
+
+
 if __name__ == "__main__":
     app()

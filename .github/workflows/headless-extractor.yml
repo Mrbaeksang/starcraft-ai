@@ -5,6 +5,8 @@ on:
     paths:
       - "extractor/headless/**"
       - "src/starcraft_ai/data/**"
+      - "src/starcraft_ai/transition_training.py"
+      - "src/starcraft_ai/cli.py"
       - "tests/fixtures/**"
       - ".github/workflows/headless-extractor.yml"
   push:
@@ -12,6 +14,8 @@ on:
     paths:
       - "extractor/headless/**"
       - "src/starcraft_ai/data/**"
+      - "src/starcraft_ai/transition_training.py"
+      - "src/starcraft_ai/cli.py"
       - "tests/fixtures/**"
       - ".github/workflows/headless-extractor.yml"
   workflow_dispatch:
@@ -38,15 +42,28 @@ jobs:
         run: |
           mkdir -p artifacts
           BIN=extractor/headless/target/release/scai-headless-extractor
-          "$BIN"             --replay tests/fixtures/larva_vs_mini.rep             --output artifacts/first.jsonl             --manifest artifacts/first.manifest.json             --synthetic             --max-frames 3000
-          "$BIN"             --replay tests/fixtures/larva_vs_mini.rep             --output artifacts/second.jsonl             --manifest artifacts/second.manifest.json             --synthetic             --max-frames 3000
+          "$BIN" \
+            --replay tests/fixtures/larva_vs_mini.rep \
+            --output artifacts/first.jsonl \
+            --manifest artifacts/first.manifest.json \
+            --synthetic \
+            --max-frames 3000
+          "$BIN" \
+            --replay tests/fixtures/larva_vs_mini.rep \
+            --output artifacts/second.jsonl \
+            --manifest artifacts/second.manifest.json \
+            --synthetic \
+            --max-frames 3000
 
       - name: Reject a corrupt replay
         shell: bash
         run: |
           head -c 128 tests/fixtures/larva_vs_mini.rep > artifacts/corrupt.rep
           set +e
-          extractor/headless/target/release/scai-headless-extractor             --replay artifacts/corrupt.rep             --output artifacts/should-not-exist.jsonl             --synthetic
+          extractor/headless/target/release/scai-headless-extractor \
+            --replay artifacts/corrupt.rep \
+            --output artifacts/should-not-exist.jsonl \
+            --synthetic
           status=$?
           set -e
           if [ "$status" -eq 0 ]; then
@@ -74,25 +91,42 @@ jobs:
           uv run --extra cpu scai benchmark-data artifacts/first.jsonl --repeats 2
           uv run --extra cpu scai pack-data artifacts/first.jsonl artifacts/first.npz
 
-      - name: Assert synthetic fidelity cannot be mistaken for benchmark data
+      - name: Train from extracted TransitionV1 data
+        run: |
+          uv run --extra cpu scai train-data artifacts/first.jsonl \
+            --model jepa \
+            --steps 5 \
+            --batch-size 8 \
+            --seed 7 \
+            --device cpu \
+            --allow-single-episode-smoke \
+            --output artifacts/train-smoke.json
+
+      - name: Assert smoke-only fidelity boundaries
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
 
           manifest = json.loads(Path("artifacts/first.manifest.json").read_text())
+          result = json.loads(Path("artifacts/train-smoke.json").read_text())
+
           assert manifest["fidelity"] == "synthetic-ci"
           assert manifest["scientific_use"].startswith("pipeline-validation-only")
           assert manifest["emitted_transitions"] > 0
-          print(json.dumps(manifest, indent=2))
+          assert result["smoke_only"] is True
+          assert result["transitions"] > 0
+          assert result["episodes"] == 1
+          print(json.dumps({"extraction": manifest, "training": result}, indent=2))
           PY
 
-      - name: Upload extraction diagnostics
+      - name: Upload extraction and training diagnostics
         uses: actions/upload-artifact@v7.0.1
         with:
           name: headless-real-replay-validation
           path: |
             artifacts/*.manifest.json
             artifacts/*.npz
+            artifacts/train-smoke.json
           retention-days: 7
           if-no-files-found: error
