@@ -53,9 +53,7 @@ def baseline_config() -> WorldModelConfig:
 
 
 def _with_terminal_labels(batch: SyntheticBatch) -> SyntheticBatch:
-    terminal = (
-        batch.next_entities[:, :, 0].mean(dim=1) > 0.05
-    ).to(batch.entities.dtype)
+    terminal = (batch.next_entities[:, :, 0].mean(dim=1) > 0.05).to(batch.entities.dtype)
     return SyntheticBatch(
         entities=batch.entities,
         next_entities=batch.next_entities,
