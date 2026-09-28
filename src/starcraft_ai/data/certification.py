@@ -6,11 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from starcraft_ai.data.backend_compare import (
-    BackendComparisonPolicy,
-    BackendComparisonResult,
-    compare_backends,
-)
+from starcraft_ai.data.backend_compare import BackendComparisonPolicy, compare_backends
 from starcraft_ai.data.io import sha256_file
 
 CERTIFICATE_SCHEMA_VERSION = 1
