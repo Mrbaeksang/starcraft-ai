@@ -99,6 +99,25 @@ jobs:
             echo "GET range unsupported; partial extraction skipped" >> artifacts/report.md
           fi
 
+          echo "" >> artifacts/report.md
+          echo "## original replay pair probe" >> artifacts/report.md
+          original_meta="$(curl -LfsS --max-time 90 --range 0-134217727 --max-filesize 140000000 -o artifacts/original-prefix.tar.gz -w 'code=%{http_code} bytes=%{size_download}' "https://dl.fbaipublicfiles.com/stardata/original_replays.tar.gz")"
+          original_status=$?
+          echo "original_range_status=$original_status $original_meta" >> artifacts/report.md
+          if [ "$original_status" -eq 0 ] && echo "$original_meta" | grep -q "code=206"; then
+            gzip -dc artifacts/original-prefix.tar.gz > artifacts/original-prefix.tar 2>artifacts/original-gzip.err
+            tar -tf artifacts/original-prefix.tar > artifacts/original-list.txt 2>artifacts/original-tar.err
+            first_rep="$(grep -m1 "[.]rep$" artifacts/original-list.txt)"
+            paired_rep="$(grep -m1 "bwrep_bqrdp[.]rep$" artifacts/original-list.txt)"
+            echo "first_original_member=$first_rep" >> artifacts/report.md
+            echo "paired_original_member=$paired_rep" >> artifacts/report.md
+            if [ -n "$paired_rep" ]; then
+              tar -xOf artifacts/original-prefix.tar "$paired_rep" > artifacts/paired.rep 2>artifacts/original-extract.err
+              paired_size="$(wc -c < artifacts/paired.rep 2>/dev/null || echo 0)"
+              echo "paired_original_size=$paired_size" >> artifacts/report.md
+            fi
+          fi
+          rm -f artifacts/original-prefix.tar artifacts/original-prefix.tar.gz
           rm -f artifacts/chunk0-prefix.tar artifacts/chunk0-prefix.tar.gz
           cat artifacts/report.md >> "$GITHUB_STEP_SUMMARY"
           exit 0
@@ -145,6 +164,40 @@ jobs:
           assert data["order_events"] > 0
           assert data["last"]["units"] > 0
           print(json.dumps(data, indent=2))
+          PY
+      - name: Parse paired original replay
+        shell: bash
+        run: |
+          test -s artifacts/paired.rep
+          cargo build --release --manifest-path extractor/headless/Cargo.toml
+          extractor/headless/target/release/scai-headless-extractor \
+            --replay artifacts/paired.rep \
+            --output artifacts/paired-transitions.jsonl \
+            --manifest artifacts/paired-replay-manifest.json \
+            --synthetic \
+            --max-frames 3000
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          sample = json.loads(Path("artifacts/sample-summary.json").read_text())
+          manifest = json.loads(Path("artifacts/paired-replay-manifest.json").read_text())
+          expected = sample["frames"] * 3
+          delta = abs(manifest["replay_frames"] - expected)
+          result = {
+              "tcr_frames": sample["frames"],
+              "expected_rep_frames": expected,
+              "rep_frames": manifest["replay_frames"],
+              "frame_delta": delta,
+              "replay_commands": manifest["replay_commands"],
+              "emitted_actions": manifest["emitted_actions"],
+              "map_name": manifest["map_name"],
+          }
+          Path("artifacts/pair-check.json").write_text(json.dumps(result, indent=2) + "\n")
+          print(json.dumps(result, indent=2))
+          assert manifest["replay_commands"] > 0
+          assert manifest["emitted_actions"] > 0
+          assert delta <= 12
           PY
       - name: Upload probe report
         uses: actions/upload-artifact@v7.0.1
