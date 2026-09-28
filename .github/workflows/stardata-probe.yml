@@ -28,9 +28,7 @@ jobs:
             name="$1"
             url="$2"
             echo "## $name" >> artifacts/report.md
-            echo "" >> artifacts/report.md
             echo "$url" >> artifacts/report.md
-            echo "" >> artifacts/report.md
             code="$(curl -LIsS --max-time 30 -o "artifacts/$name.headers" -w '%{http_code}' "$url")"
             status=$?
             echo "curl_status=$status http_code=$code" >> artifacts/report.md
@@ -46,12 +44,15 @@ jobs:
           curl -LfsS --max-time 30 \
             "https://dl.fbaipublicfiles.com/stardata/dumped_replays/train.list" \
             -o artifacts/train.list
+          train_status=$?
+          echo "train_list_download_status=$train_status" >> artifacts/report.md
 
           curl -LfsS --max-time 60 \
             "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0/bwrep_065pa.tcr" \
             -o artifacts/first.tcr
-          echo "direct_tcr_download_status=$? size=$(wc -c < artifacts/first.tcr 2>/dev/null || echo 0)" >> artifacts/report.md
-          echo "train_list_download_status=$?" >> artifacts/report.md
+          direct_status=$?
+          direct_size="$(wc -c < artifacts/first.tcr 2>/dev/null || echo 0)"
+          echo "direct_tcr_download_status=$direct_status size=$direct_size" >> artifacts/report.md
 
           if [ -s artifacts/train.list ]; then
             echo "" >> artifacts/report.md
@@ -61,23 +62,9 @@ jobs:
             echo "END_TRAIN_LIST" >> artifacts/report.md
           fi
 
-          for base in \
-            "https://stardata.s3.amazonaws.com/?list-type=2&max-keys=20" \
-            "https://s3.amazonaws.com/stardata/?list-type=2&max-keys=20"
-          do
-            curl -LfsS --max-time 30 "$base" -o artifacts/s3-list.xml
-            if [ -s artifacts/s3-list.xml ]; then
-              echo "" >> artifacts/report.md
-              echo "## S3 listing sample" >> artifacts/report.md
-              head -c 8000 artifacts/s3-list.xml >> artifacts/report.md
-              echo "" >> artifacts/report.md
-              break
-            fi
-          done
-
           echo "" >> artifacts/report.md
           echo "## bounded chunk range probe" >> artifacts/report.md
-          range_code="$(curl -LIsS --max-time 30 -H 'Range: bytes=0-67108863' -o artifacts/range.headers -w '%{http_code}' \"https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz\")"
+          range_code="$(curl -LIsS --max-time 30 -H "Range: bytes=0-67108863" -o artifacts/range.headers -w '%{http_code}' "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz")"
           echo "range_http_code=$range_code" >> artifacts/report.md
           if [ "$range_code" = "206" ]; then
             curl -LfsS --max-time 180 --range 0-67108863 \
@@ -92,15 +79,7 @@ jobs:
               tar -tf artifacts/chunk0-prefix.tar > artifacts/tar-list.txt 2>artifacts/tar-list.err
               tar_status=$?
               echo "partial_tar_status=$tar_status" >> artifacts/report.md
-              first_tcr="$(grep -m1 -E '\.tcr
-      - name: Upload probe report
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: stardata-source-probe
-          path: artifacts/
-          retention-days: 3
-          if-no-files-found: error
- artifacts/tar-list.txt)"
+              first_tcr="$(grep -m1 "[.]tcr" artifacts/tar-list.txt)"
               echo "first_tar_member=$first_tcr" >> artifacts/report.md
               if [ -n "$first_tcr" ]; then
                 tar -xOf artifacts/chunk0-prefix.tar "$first_tcr" > artifacts/sample.tcr 2>artifacts/tar-extract.err
@@ -110,7 +89,6 @@ jobs:
               fi
             else
               echo "range guard failed: server returned too much data" >> artifacts/report.md
-              rm -f artifacts/chunk0-prefix.tar.gz
             fi
           else
             echo "range unsupported; partial extraction skipped" >> artifacts/report.md
