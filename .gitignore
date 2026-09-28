@@ -22,6 +22,7 @@ data/processed/
 data/local/
 runtime/
 *.rep
+!tests/fixtures/larva_vs_mini.rep
 *.scx
 *.scm
 *.mpq

@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "kind": "cwal_high_mmr_replay_snapshot_manifest",
+  "captured_at": "2026-09-28",
+  "captured_via_github_actions": true,
+  "workflow_run_id": 36364494057,
+  "artifact_id": 10947195814,
+  "artifact_name": "current-high-mmr-replays",
+  "source": "https://cwal.gg/replays",
+  "api_base": "https://api.aws.cwal.gg",
+  "mmr_min": 2400,
+  "mmr_max": 2900,
+  "resolved_maps": {
+    "Backrooms": "backrooms 1.1.scx",
+    "Octagon SE": "(4)octagonse2.0.scx",
+    "KnockOut": "knockout 1.4.scx",
+    "Colorless Fate": "(2)colorless fate 1.1.scx",
+    "Odyssey RE": "(2)odysseyre_2.0.scx",
+    "Attitude SE": "(4)attitude se 2.1.scx",
+    "Aiolos": "(3)aiolos_1.0b.scm"
+  },
+  "replays": [
+    {
+      "map": "Colorless Fate",
+      "matchup": "ZvP",
+      "match_id": "MM-72CB9312-BAB9-11F1-B3A2-FA167B99164A",
+      "timestamp_ms": 1790544995000,
+      "duration_seconds": 918,
+      "vault_mmr": 2521,
+      "bytes": 103450,
+      "sha256": "53fb2c94ed4e01b673779069fa0eecf7631804077ce3c92d57669bca6f5cb00f"
+    },
+    {
+      "map": "Octagon SE",
+      "matchup": "ZvZ",
+      "match_id": "MM-A1E0462C-BAB7-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2512,
+      "bytes": 70615,
+      "sha256": "2abb2a34eb1fad1cc3c1e0161ad4a293fc548fdcd0f70454c31ebd3898f5181c"
+    },
+    {
+      "map": "Octagon SE",
+      "matchup": "ZvZ",
+      "match_id": "MM-5CB9F1E4-BAB5-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2498,
+      "bytes": 72644,
+      "sha256": "3ae5020aa72a51663165975ce461d2a2c1e72642e0ed1e5292a7da41eff388ff"
+    },
+    {
+      "map": "Attitude SE",
+      "matchup": "ZvZ",
+      "match_id": "MM-ABA95A9C-BAB0-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2505,
+      "bytes": 78082,
+      "sha256": "d0a29fbfa642044f8f3af9fe4dd7331fea85e80a841a60442a2a9708b3d4b497"
+    },
+    {
+      "map": "Aiolos",
+      "matchup": "ZvZ",
+      "match_id": "MM-9DEBFDB6-BAAA-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2418,
+      "bytes": 124832,
+      "sha256": "06b84e2dd63012f2bc9dbe5440ca470a385d89eddc928a86bc627f40c5d559f4"
+    },
+    {
+      "map": "Attitude SE",
+      "matchup": "ZvP",
+      "match_id": "MM-D555400E-BAA6-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2400,
+      "bytes": 98834,
+      "sha256": "35167b5ecf5008e78855f45f59a74fea50cb4189d16d2318a956b69dc2efeb5e"
+    },
+    {
+      "map": "Attitude SE",
+      "matchup": "PvP",
+      "match_id": "MM-BF4111AC-BAA2-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2465,
+      "bytes": 84698,
+      "sha256": "1cbde8b93c7f9ce04d5f9a3d636f849c909f17e3156922d4cfd9a96a73ba4a28"
+    },
+    {
+      "map": "Attitude SE",
+      "matchup": "ZvP",
+      "match_id": "MM-894D7C80-BAA1-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2403,
+      "bytes": 76423,
+      "sha256": "75056825ccefed89fa066461a62fd7a5959b5b14c37166b6403a8fabf7508578"
+    },
+    {
+      "map": "Octagon SE",
+      "matchup": "ZvT",
+      "match_id": "MM-F13D4AEC-BA96-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2411,
+      "bytes": 103504,
+      "sha256": "11b4e9480f9991b5a7328b581998920835448cfd468b8b4202cc94039af668c9"
+    },
+    {
+      "map": "Attitude SE",
+      "matchup": "TvT",
+      "match_id": "MM-47107A5E-BA95-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2440,
+      "bytes": 85943,
+      "sha256": "554ea217ab9b62f88a676f24f53fc589ae6265e694b8433375be74859482c136"
+    },
+    {
+      "map": "Attitude SE",
+      "matchup": "TvP",
+      "match_id": "MM-9C9703BA-BA92-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2490,
+      "bytes": 71883,
+      "sha256": "d8b9961f299ef40de24924bd6e324bae3d40c8846f2eac3d9fb9f072ba331b9a"
+    },
+    {
+      "map": "Octagon SE",
+      "matchup": "ZvT",
+      "match_id": "MM-7E2D19FC-BA90-11F1-B3A2-FA167B99164A",
+      "vault_mmr": 2509,
+      "bytes": 97176,
+      "sha256": "c0974bca5b6c1b2408cd054dd4ed076ef759c6b41a5ca4c5cea027da93e6e773"
+    }
+  ],
+  "notes": [
+    "These are current high-MMR ladder replays, not official Proleague matches.",
+    "Raw files were successfully fetched and validated in GitHub Actions run 36364494057.",
+    "The raw replay artifact is intentionally short-lived; this manifest pins the identities and checksums.",
+    "This first bounded snapshot had no selected Backrooms, KnockOut, or Odyssey RE replay after current-query filtering and newest-first capping."
+  ]
+}
