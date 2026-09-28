@@ -70,8 +70,8 @@ jobs:
           get_status=$?
           echo "range_get_status=$get_status $get_meta" >> artifacts/report.md
           rm -f artifacts/range-get.bin
-          if [ "$range_code" = "206" ]; then
-            curl -LfsS --max-time 180 --range 0-67108863 \
+          if [ "$get_status" -eq 0 ] && echo "$get_meta" | grep -q "code=206"; then
+            curl -LfsS --max-time 180 --range 0-67108863 --max-filesize 70000000 \
               "https://dl.fbaipublicfiles.com/stardata/dumped_replays/0.tar.gz" \
               -o artifacts/chunk0-prefix.tar.gz
             prefix_size="$(wc -c < artifacts/chunk0-prefix.tar.gz)"
@@ -95,7 +95,7 @@ jobs:
               echo "range guard failed: server returned too much data" >> artifacts/report.md
             fi
           else
-            echo "range unsupported; partial extraction skipped" >> artifacts/report.md
+            echo "GET range unsupported; partial extraction skipped" >> artifacts/report.md
           fi
 
           rm -f artifacts/chunk0-prefix.tar artifacts/chunk0-prefix.tar.gz
