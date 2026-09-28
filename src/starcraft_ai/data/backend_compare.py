@@ -283,8 +283,7 @@ def compare_backends(
             "actor-count MAE above threshold",
         ),
         (
-            metrics["action_target_position_mae"]
-            <= active_policy.max_action_target_position_mae,
+            metrics["action_target_position_mae"] <= active_policy.max_action_target_position_mae,
             "action target-position MAE above threshold",
         ),
         (
