@@ -331,9 +331,11 @@ class ActionV1:
             raise ValueError(f"{self.action_type} requires a target position")
         if self.action_type == "ATTACK_UNIT" and self.target_unit_id is None:
             raise ValueError("ATTACK_UNIT requires target_unit_id")
-        if self.action_type in {"TRAIN", "BUILD", "MORPH", "RESEARCH", "UPGRADE"}:
-            if self.argument_type_id is None:
-                raise ValueError(f"{self.action_type} requires argument_type_id")
+        if (
+            self.action_type in {"TRAIN", "BUILD", "MORPH", "RESEARCH", "UPGRADE"}
+            and self.argument_type_id is None
+        ):
+            raise ValueError(f"{self.action_type} requires argument_type_id")
 
     def to_dict(self) -> dict[str, Any]:
         return {

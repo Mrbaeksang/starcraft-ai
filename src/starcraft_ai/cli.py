@@ -73,5 +73,40 @@ def benchmark_synthetic_command(
     typer.echo(payload)
 
 
+@app.command("inspect-data")
+def inspect_data_command(
+    path: Annotated[Path, typer.Argument(help="TransitionV1 JSONL file.")],
+) -> None:
+    """Validate a TransitionV1 JSONL file and print a compact summary."""
+    from starcraft_ai.data import iter_jsonl_v1, sha256_file
+
+    transitions = list(iter_jsonl_v1(path))
+    if not transitions:
+        raise typer.BadParameter("dataset contains no transitions")
+
+    episodes = sorted({item.episode_id for item in transitions})
+    frames = [
+        frame
+        for item in transitions
+        for frame in (item.observation.frame, item.next_observation.frame)
+    ]
+    typer.echo(f"transitions: {len(transitions)}")
+    typer.echo(f"episodes:    {len(episodes)}")
+    typer.echo(f"frame range: {min(frames)}..{max(frames)}")
+    typer.echo(f"sha256:      {sha256_file(path)}")
+
+
+@app.command("pack-data")
+def pack_data_command(
+    input_path: Annotated[Path, typer.Argument(help="TransitionV1 JSONL input.")],
+    output_path: Annotated[Path, typer.Argument(help="Compressed NPZ output.")],
+) -> None:
+    """Validate TransitionV1 JSONL and pack it into the compact NPZ format."""
+    from starcraft_ai.data import iter_jsonl_v1, pack_npz_v1
+
+    count = pack_npz_v1(output_path, iter_jsonl_v1(input_path))
+    typer.echo(f"packed {count} transitions -> {output_path}")
+
+
 if __name__ == "__main__":
     app()
