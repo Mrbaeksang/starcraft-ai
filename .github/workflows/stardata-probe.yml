@@ -140,7 +140,9 @@ jobs:
           data = json.loads(Path("artifacts/sample-summary.json").read_text())
           assert data["frames"] > 0
           assert len(data["player_ids"]) >= 2
-          assert data["first"]["units"] > 0
+          assert data["max_units"] > 0
+          assert data["first_nonempty_frame"] >= 0
+          assert data["total_actions"] > 0
           assert data["last"]["units"] > 0
           print(json.dumps(data, indent=2))
           PY
