@@ -216,9 +216,7 @@ def train_data_command(
     device: Annotated[str, typer.Option(help="auto, cpu, or cuda")] = "auto",
     allow_single_episode_smoke: Annotated[
         bool,
-        typer.Option(
-            help="Allow a non-claimable single/few-episode pipeline smoke run."
-        ),
+        typer.Option(help="Allow a non-claimable single/few-episode pipeline smoke run."),
     ] = False,
     output: Annotated[
         Path | None,
