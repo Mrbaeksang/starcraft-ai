@@ -242,5 +242,31 @@ def train_data_command(
     typer.echo(payload)
 
 
+@app.command("compare-backends")
+def compare_backends_command(
+    reference: Annotated[Path, typer.Argument(help="Authoritative BWAPI TransitionV1 JSONL.")],
+    candidate: Annotated[Path, typer.Argument(help="Headless candidate TransitionV1 JSONL.")],
+    output: Annotated[
+        Path | None,
+        typer.Option(help="Optional JSON report path."),
+    ] = None,
+    require_promotion: Annotated[
+        bool,
+        typer.Option(help="Exit non-zero unless strict promotion thresholds pass."),
+    ] = False,
+) -> None:
+    """Compare BWAPI reference state/action data with a headless backend."""
+    from starcraft_ai.data.backend_compare import compare_backends
+
+    result = compare_backends(reference, candidate)
+    payload = json.dumps(result.to_dict(), indent=2, sort_keys=True)
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(payload + "\n", encoding="utf-8")
+    typer.echo(payload)
+    if require_promotion and not result.promotion_eligible:
+        raise typer.Exit(code=2)
+
+
 if __name__ == "__main__":
     app()

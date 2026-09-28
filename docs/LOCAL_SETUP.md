@@ -77,7 +77,31 @@ WSL:
 /mnt/c/starcraft-ai-data/
 ```
 
-Exact collector commands will be documented after M1 exists and is tested.
+### M1-C one-time backend validation
+
+After building the Windows collector, run the same replay from one player's point of view:
+
+```powershell
+BWAPICollector.exe `
+  --mode replay `
+  --observability player `
+  --player-id 0 `
+  --horizon-frames 8 `
+  --output C:\\starcraft-ai-data\\reference.jsonl
+```
+
+Generate the candidate with the headless extractor using the same replay/player/horizon, then from WSL:
+
+```bash
+uv run --extra cpu scai compare-backends \
+  /mnt/c/starcraft-ai-data/reference.jsonl \
+  /mnt/c/starcraft-ai-data/headless.jsonl \
+  --output /mnt/c/starcraft-ai-data/backend-comparison.json
+```
+
+Add `--require-promotion` to make the command fail unless the strict promotion thresholds pass.
+
+See `docs/BACKEND_VALIDATION.md`.
 
 ## Keep runtime files out of Git
 
