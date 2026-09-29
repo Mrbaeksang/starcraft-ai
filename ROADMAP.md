@@ -2,6 +2,31 @@
 
 The roadmap is gated by evidence, not dates.
 
+## Product target — current Battle.net human matchmaking
+
+The agent must eventually play human opponents through the current StarCraft:
+Remastered Battle.net public matchmaking and ladder. A private lobby, legacy
+1.16.1/BWAPI match, replay-only evaluation, or self-play does not satisfy this
+target.
+
+### Runtime gate — before claiming a playable agent
+
+1. On the installed current Windows client, capture an unobscured game frame
+   and deliver a harmless input; record the client version and evidence.
+2. Build a player-observable screen-to-action loop that can identify the match
+   state, select units, and issue commands at a measured latency. Keep the
+   replay/BWAPI data path as research input until its observations and actions
+   have been mapped to this live interface.
+3. Complete a local game through that loop, then a human public match, then a
+   ladder match. Record the client version, result, command evidence, and
+   failures for each gate. Do not mark the ladder target complete before an
+   actual ladder match finishes with the agent controlling the game.
+
+The installed client was identified as 1.23.10.13515. The current repository
+has no verified Remastered command adapter or public-match runtime. The first
+gate remains open; a window listing alone is not capture/input proof. Track the
+evidence and progress in [issue #22](https://github.com/Mrbaeksang/starcraft-ai/issues/22).
+
 ## M0 — Research scaffold ✅
 
 - reproducible uv/PyTorch environment;

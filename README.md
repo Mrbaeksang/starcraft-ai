@@ -19,6 +19,11 @@
 > [!IMPORTANT]
 > **Current status: M0 complete, M1 in progress.** This repository contains a reproducible research scaffold, real replay acquisition, model smoke tests, and CI research infrastructure. It does **not** yet contain a trained competitive StarCraft agent.
 
+**Delivery target:** an agent that plays humans on the current StarCraft:
+Remastered Battle.net public matchmaking and ladder. The live-client capture,
+perception, and input loop has not been verified or implemented. See the
+[runtime gate](ROADMAP.md#runtime-gate--before-claiming-a-playable-agent).
+
 ## The idea
 
 Most game agents are trained primarily to answer:
@@ -51,13 +56,16 @@ structured game action
 
 ## Why this repository is different
 
-- **Structured game state, not screenshots first.** BWAPI/replay tooling exposes units, resources, orders, map data, and actions directly.
+- **Structured research data.** BWAPI/replay tooling exposes units, resources, orders, map data, and actions for offline research. The current Battle.net client still needs a verified player-observable live interface.
 - **World-model-first research.** We compare mature model-based RL baselines with JEPA-style predictive representation learning.
 - **Current data pipeline.** A weekly GitHub Actions job fetches bounded high-MMR replay snapshots on current competitive maps.
 - **Falsifiable milestones.** Complex methods do not advance until simpler baselines pass measurable gates.
 - **CI-first research.** CPU baselines, multi-seed checks, data validation, package builds, security scanning, and dependency maintenance run on GitHub Actions.
 
 ## Current roadmap
+
+The [current-client runtime gate](ROADMAP.md#runtime-gate--before-claiming-a-playable-agent)
+must be passed before this project can claim human public-match or ladder play.
 
 | Milestone | Goal | Status |
 |---|---|---|
