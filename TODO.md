@@ -35,6 +35,9 @@ does not presently offer a usable Ranked entry; a private lobby or legacy
   request loop for lobby recognition and visual checks. A 30-frame live sample
   captured 1920×1080 PNGs at p95 68.96 ms. This is screen capture, not a
   native game-state stream. See [evidence](data/probes/remastered-foreground-2026-09-29.json).
+- [x] Let the resident bridge activate the verified game window before capture
+  or input. The live client focus/capture path was exercised after the window
+  was behind Orca; the bridge checks the process and HWND after activation.
 - [ ] Prove hotkeys and measure sustained capture/action latency, stale frames,
   and dropped frames during an active match.
 

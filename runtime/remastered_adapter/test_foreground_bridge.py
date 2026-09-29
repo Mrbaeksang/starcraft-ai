@@ -28,6 +28,8 @@ for line in sys.stdin:
     elif op == "click":
         result = {"ok": True, "op": op, "x": request["x"], "y": request["y"],
                   "button": request["button"], "input_ms": 2.5}
+    elif op == "focus":
+        result = {"ok": True, "op": op, "pid": 7, "hwnd": 8}
     else:
         result = {"ok": True, "op": op, "input_ms": 1.0}
     print(json.dumps(result), flush=True)
@@ -54,6 +56,7 @@ class ForegroundBridgeTest(unittest.TestCase):
                 ) as bridge,
             ):
                 self.assertEqual((bridge.pid, bridge.hwnd), (7, 8))
+                bridge.focus()
                 self.assertEqual(bridge.click(0, 0), 2.5)
                 self.assertEqual(bridge.click(0, 0, "right"), 2.5)
                 with self.assertRaisesRegex(RuntimeError, "client_coordinates"):
