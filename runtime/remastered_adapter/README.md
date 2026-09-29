@@ -5,6 +5,14 @@ client. The current code proves process identity and read-only attachment. It
 does **not** read game state, issue game commands, synchronize multiplayer
 turns, or load a bot. Those are explicit gates in [`TODO.md`](../../TODO.md).
 
+The separate foreground UI bridge has now delivered Move, Gather, and Train
+inputs in a private Fighting Spirit Melee game; the selected Probe moved, self
+minerals rose, and the Nexus showed a Probe build queue. See the
+[live command diagnostic](../../data/probes/remastered-live-commands-2026-09-29.json).
+The assistant chose the screen coordinates. This does not prove that a policy
+can choose actions, that the native game command path works, or that a bot can
+complete a match.
+
 ## Verified client
 
 - Executable: `C:\Program Files (x86)\StarCraft\x86_64\StarCraft.exe`

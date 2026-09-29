@@ -1,0 +1,56 @@
+{
+  "schema": "scai-remastered-live-command-diagnostic-v1",
+  "client_version": "1.23.10.13515",
+  "client_sha256": "ce3ab05dc9a6aa35418947e5d95e19651ad6fbcd5e2c1856cd729c5b7c31281c",
+  "process_id": 60180,
+  "window_handle": 855176,
+  "window_resolution": [1920, 1080],
+  "game_type": "private Melee",
+  "map": "Fighting Spirit 1.3",
+  "self_race": "Protoss",
+  "opponent": "Computer",
+  "transport": "verified foreground SendInput mouse clicks",
+  "selection": {
+    "click_client_xy": [865, 590],
+    "visible_selection": "Protoss Probe",
+    "evidence": "remastered-live-probe-selected-2026-09-29.png"
+  },
+  "move": {
+    "target_client_xy": [1150, 400],
+    "input_latency_ms": 72.3028,
+    "visible_result": "selected Probe changed position after right-click",
+    "evidence": "remastered-live-move-2026-09-29.png"
+  },
+  "gather": {
+    "target_client_xy": [420, 560],
+    "candidate_self_minerals_before": 50,
+    "candidate_self_minerals_after_six_seconds": 66,
+    "note": "Read-only resource diagnostic reported slot 0 by exact self-name match; later HUD showed additional income. The sampling was not simultaneous."
+  },
+  "train": {
+    "selected_structure": "Protoss Nexus",
+    "click_client_xy": [1410, 840],
+    "input_latency_ms": 67.7201,
+    "visible_result": "Nexus displayed a Probe icon and Building progress bar",
+    "hud_before": {"minerals": 50, "supply_used": 4, "supply_total": 9},
+    "hud_after": {"minerals": 25, "supply_used": 5, "supply_total": 9},
+    "evidence": [
+      "remastered-live-before-train-hud-2026-09-29.png",
+      "remastered-live-train-queue-2026-09-29.png",
+      "remastered-live-after-train-hud-2026-09-29.png"
+    ],
+    "note": "The HUD values were captured around the command; mining continued during the interval, so they are supporting evidence rather than an isolated cost measurement."
+  },
+  "assistant_chose_coordinates": true,
+  "second_local_match_result": {
+    "outcome": "Defeat",
+    "elapsed_time": "10:44",
+    "evidence": "remastered-live-result-2026-09-29.png",
+    "interpretation": "The assistant executed only transport probes; no bot policy controlled the match."
+  },
+  "autonomous_policy": false,
+  "full_match_by_bot": false,
+  "human_opponent": false,
+  "native_game_command_path_proven": false,
+  "win_proven": false
+}
