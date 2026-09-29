@@ -175,6 +175,11 @@ class ForegroundBridge:
             raise RuntimeError("The bridge reported a different click target")
         return float(result["input_ms"])
 
+    def focus(self) -> None:
+        result = self._request({"op": "focus"})
+        if (int(result["pid"]), int(result["hwnd"])) != (self.pid, self.hwnd):
+            raise RuntimeError("The bridge focused a different game window")
+
     def keys(self, virtual_keys: list[int]) -> float:
         result = self._request({"op": "keys", "vks": virtual_keys})
         return float(result["input_ms"])

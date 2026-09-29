@@ -2,6 +2,7 @@
 # JSON lines on stdin/stdout; no matchmaking or game policy is embedded here.
 param([Parameter(Mandatory = $true)][string]$ManifestPath)
 $ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 Add-Type -AssemblyName System.Drawing
 
 Add-Type -TypeDefinition @'
@@ -39,7 +40,31 @@ public static class StarCraftInput {
     }
 
     [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int command);
+    [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr hWnd);
+    [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
+    [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint source, uint target, bool attach);
     [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+    public static uint ForegroundProcessId() {
+        uint processId;
+        GetWindowThreadProcessId(GetForegroundWindow(), out processId);
+        return processId;
+    }
+    public static bool Focus(IntPtr window) {
+        uint ignored;
+        uint foregroundThread = GetWindowThreadProcessId(GetForegroundWindow(), out ignored);
+        uint currentThread = GetCurrentThreadId();
+        bool attached = foregroundThread != 0 && foregroundThread != currentThread
+            && AttachThreadInput(currentThread, foregroundThread, true);
+        try {
+            ShowWindow(window, 9);
+            BringWindowToTop(window);
+            return SetForegroundWindow(window);
+        } finally {
+            if (attached) AttachThreadInput(currentThread, foregroundThread, false);
+        }
+    }
     [DllImport("user32.dll")] public static extern bool GetClientRect(IntPtr hWnd, out RECT rect);
     [DllImport("user32.dll")] public static extern bool ClientToScreen(IntPtr hWnd, ref POINT point);
     [DllImport("user32.dll", SetLastError = true)] public static extern bool SetCursorPos(int x, int y);
@@ -136,6 +161,18 @@ while ($running) {
     try {
         $request = $line | ConvertFrom-Json
         switch ($request.op) {
+            'focus' {
+                $current = Get-Process -Id $pidAtStart -ErrorAction Stop
+                if ($current.MainWindowHandle -ne $window) { throw 'game_window_changed' }
+                $foregroundSet = [StarCraftInput]::Focus($window)
+                $immediateWindow = [StarCraftInput]::GetForegroundWindow().ToInt64()
+                Start-Sleep -Milliseconds 10
+                if ([StarCraftInput]::GetForegroundWindow() -ne $window) {
+                    throw "game_not_foreground:hwnd=$([StarCraftInput]::GetForegroundWindow().ToInt64()) pid=$([StarCraftInput]::ForegroundProcessId()) set=$foregroundSet immediate=$immediateWindow"
+                }
+                [StarCraftInput]::Verify($window, $pidAtStart, $width, $height)
+                $response = @{ ok = $true; op = 'focus'; pid = $pidAtStart; hwnd = $window.ToInt64() }
+            }
             'hello' {
                 [StarCraftInput]::Verify($window, $pidAtStart, $width, $height)
                 $response = @{ ok = $true; op = 'hello'; pid = $pidAtStart; hwnd = $window.ToInt64() }
