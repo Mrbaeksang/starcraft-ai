@@ -19,10 +19,10 @@ def test_actions_align_to_surrounding_sampled_states(tmp_path: Path) -> None:
     _write_jsonl(
         states,
         [
-            {"sample_index": 0, "approx_game_frame": 0},
-            {"sample_index": 1, "approx_game_frame": 3},
-            {"sample_index": 2, "approx_game_frame": 6},
-            {"sample_index": 3, "approx_game_frame": 9},
+            {"sample_index": 0, "approx_game_frame": 0, "units": [{"unit_id": 7, "player_id": 0}]},
+            {"sample_index": 1, "approx_game_frame": 3, "units": [{"unit_id": 8, "player_id": 1}]},
+            {"sample_index": 2, "approx_game_frame": 6, "units": [{"unit_id": 9, "player_id": 1}]},
+            {"sample_index": 3, "approx_game_frame": 9, "units": []},
         ],
     )
     _write_jsonl(
@@ -40,9 +40,37 @@ def test_actions_align_to_surrounding_sampled_states(tmp_path: Path) -> None:
     assert result.aligned_actions == 3
     assert result.max_before_gap == 2
     assert result.max_after_gap == 3
+    assert result.selected_actor_refs == 3
+    assert result.raw_actor_id_matches == 3
+    assert result.raw_actor_owner_matches == 2
     assert rows[0]["state_sample_index"] == 0
     assert rows[0]["next_state_sample_index"] == 1
     assert rows[1]["state_sample_index"] == 1
     assert rows[1]["next_state_sample_index"] == 2
     assert rows[2]["state_sample_index"] == 2
     assert rows[2]["next_state_sample_index"] == 3
+
+
+def test_reports_cross_source_actor_id_mismatch(tmp_path: Path) -> None:
+    states = tmp_path / "states.jsonl"
+    actions = tmp_path / "actions.jsonl"
+    output = tmp_path / "aligned.jsonl"
+
+    _write_jsonl(
+        states,
+        [
+            {"sample_index": 0, "approx_game_frame": 0, "units": [{"unit_id": 2, "player_id": 0}]},
+            {"sample_index": 1, "approx_game_frame": 3, "units": []},
+        ],
+    )
+    _write_jsonl(
+        actions,
+        [{"ordinal": 0, "frame": 1, "player_id": 0, "selected_unit_tags": [3585]}],
+    )
+
+    result = align_stardata_actions(states, actions, output)
+
+    assert result.aligned_actions == 1
+    assert result.selected_actor_refs == 1
+    assert result.raw_actor_id_matches == 0
+    assert result.raw_actor_owner_matches == 0

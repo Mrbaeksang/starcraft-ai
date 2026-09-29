@@ -6,6 +6,8 @@ on:
       - ".github/workflows/stardata-probe.yml"
       - "tools/stardata_reader.cpp"
       - "extractor/headless/src/bin/replay_actions.rs"
+      - "src/starcraft_ai/data/stardata_align.py"
+      - "tests/test_stardata_align.py"
   workflow_dispatch:
 
 permissions:
@@ -283,6 +285,9 @@ jobs:
               Path("artifacts/aligned-actions.jsonl"),
           )
           payload = result.to_dict()
+          # Frame alignment alone cannot certify cross-source actor identity.
+          payload["actor_identity_mapping_verified"] = False
+          payload["ready_for_transition_v1_training"] = False
           Path("artifacts/alignment-report.json").write_text(
               json.dumps(payload, indent=2, sort_keys=True) + "\n",
               encoding="utf-8",
@@ -296,6 +301,9 @@ jobs:
           assert payload["dropped_after_last_state"] == 0
           assert payload["max_before_gap"] <= 2
           assert payload["max_after_gap"] <= 3
+          assert payload["selected_actor_refs"] > 0
+          if payload["raw_actor_id_matches"] != payload["selected_actor_refs"]:
+              print("Actor IDs differ between StarData states and replay actions; conversion to TransitionV1 requires a verified mapping.")
           PY
       - name: Upload probe report
         uses: actions/upload-artifact@v7.0.1

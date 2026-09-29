@@ -18,6 +18,9 @@ class StarDataAlignmentResult:
     max_actions_per_interval: int
     max_before_gap: int
     max_after_gap: int
+    selected_actor_refs: int
+    raw_actor_id_matches: int
+    raw_actor_owner_matches: int
 
     def to_dict(self) -> dict[str, int]:
         return asdict(self)
@@ -70,6 +73,9 @@ def align_stardata_actions(
     interval_counts: dict[int, int] = {}
     before_gaps: list[int] = []
     after_gaps: list[int] = []
+    selected_actor_refs = 0
+    raw_actor_id_matches = 0
+    raw_actor_owner_matches = 0
 
     previous_key: tuple[int, int] | None = None
     for fallback_ordinal, action in enumerate(actions):
@@ -100,6 +106,18 @@ def align_stardata_actions(
         before_gaps.append(before_gap)
         after_gaps.append(after_gap)
         interval_counts[state_index] = interval_counts.get(state_index, 0) + 1
+
+        # These IDs come from different extractors. Count exact overlaps as a
+        # diagnostic only; even a match does not certify a shared ID namespace.
+        unit_owners = {
+            unit["unit_id"]: unit["player_id"] for unit in states[state_index].get("units", [])
+        }
+        for actor_tag in action.get("selected_unit_tags", []):
+            selected_actor_refs += 1
+            if actor_tag in unit_owners:
+                raw_actor_id_matches += 1
+                if unit_owners[actor_tag] == action.get("player_id"):
+                    raw_actor_owner_matches += 1
 
         aligned.append(
             {
@@ -142,4 +160,7 @@ def align_stardata_actions(
         max_actions_per_interval=max(interval_counts.values(), default=0),
         max_before_gap=max(before_gaps, default=0),
         max_after_gap=max(after_gaps, default=0),
+        selected_actor_refs=selected_actor_refs,
+        raw_actor_id_matches=raw_actor_id_matches,
+        raw_actor_owner_matches=raw_actor_owner_matches,
     )

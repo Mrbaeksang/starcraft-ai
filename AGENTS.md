@@ -10,7 +10,7 @@ This repository values falsifiable experiments over hype. Do not claim an idea i
 
 Before changing learning/data architecture, read:
 
-1. `TODO.md`
+1. `ROADMAP.md` and the open GitHub Issues
 2. `docs/RESEARCH_PLAN.md`
 3. `docs/REFERENCES.md`
 4. `docs/CI_STRATEGY.md`
@@ -52,7 +52,7 @@ make EXTRA=cpu check
 
 ## Engineering rules
 
-1. Follow `TODO.md` milestone order.
+1. Follow `ROADMAP.md` milestone order and the open GitHub Issues.
 2. Keep the Windows BWAPI runtime boundary separate from the WSL2 learner.
 3. Prefer small typed PyTorch modules over a large RL framework until M2 is validated.
 4. Every model change preserves or adds a deterministic CPU smoke/fixture test.

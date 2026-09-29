@@ -86,3 +86,9 @@ The CI real-replay integration uses headless `synthetic-ci` state reconstruction
 It is **not** reported as a real-data model result.
 
 The first research result remains gated on an authoritative/cross-validated replay-state source.
+
+The [bounded StarData pair audit](../data/probes/stardata-pair-36410823242.json) also
+found that none of 2,435 selected actor tags from the paired replay directly match
+unit IDs in the sampled StarData states. Frame alignment alone does not establish
+actor identity or state fidelity. Do not convert this pair to `TransitionV1`
+training data until the cross-source ID mapping and state source are validated.
