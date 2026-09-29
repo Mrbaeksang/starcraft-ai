@@ -33,11 +33,51 @@ The read-only [counter scanner](../windows/state_probe.ps1) also verifies the
 build, locates the executable's `.data` section from its PE table, and samples
 changing 32-bit values. It ran against the installed process. Its candidates
 are diagnostic addresses only: none is validated as a match frame, unit array,
-or player state. The scanner always reports those proof fields as false.
+or player state. The scanner always reports those proof fields as false. The
+[`0x1090870` investigation](../../data/probes/remastered-counter-correlation-2026-09-29.json)
+records a value that advanced by 24 per second during a private game and was
+zero on the defeat screen. A paused replay falsified the frame hypothesis:
+it kept advancing while the displayed replay time stayed at 02:12. Three
+other `.data` values stopped on pause, but none is identified as a game frame.
+An exploratory scan of 269 `.data` pointer/count/capacity triples also found
+no active CUnit array after requiring readable sprite pointers.
+The [resident state bridge](../windows/state_bridge.ps1) reads one candidate
+RVA without restarting PowerShell for every snapshot. A local 30-request
+post-match sample had p95 round-trip latency 2.38 ms; all values were zero.
+Its protocol explicitly says `game_frame_proven=false`; the sampled address
+must not be fed to a policy as an authoritative game frame.
+
+The [resource diagnostic](../windows/resource_probe.ps1) reads eight
+pointer-free resource pairs from this exact build at `.data` RVA `0xe801b4`
+with a 1768-byte player-slot stride. [Paused replay comparisons](../../data/probes/remastered-resource-table-2026-09-29.json)
+matched slot-zero minerals at three displayed values (50, 90, 186) and
+slot-one gas at 216. An adjacent name table at RVA `0x106a008` with a
+232-byte stride matched both displayed player names across those replay
+points; `-ExpectedSelfName` resolves a candidate slot only on an exact,
+unique ASCII match. This is a provisional native resource binding. One
+slot-one mineral value disagreed with the replay HUD, and the local player
+slot has not been proven for live multiplayer. By default the probe emits
+only the uniquely matched candidate self resources; dumping all slots
+requires `-ResearchAllSlots`. The result remains a diagnostic and must not
+be used as a policy observation yet.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File runtime/windows/state_probe.ps1 `
-  -ManifestPath runtime/remastered_adapter/manifests/1.23.10.13515.json
+  -ManifestPath runtime/remastered_adapter/manifests/1.23.10.13515.json `
+  -WatchRva 0x1090870
+```
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File runtime/windows/state_bridge.ps1 `
+  -ManifestPath runtime/remastered_adapter/manifests/1.23.10.13515.json `
+  -CandidateRva 0x1090870
+# Send {"op":"snapshot"} and {"op":"quit"} as JSON lines on stdin.
+```
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File runtime/windows/resource_probe.ps1 `
+  -ManifestPath runtime/remastered_adapter/manifests/1.23.10.13515.json `
+  -ExpectedSelfName baeksang100
 ```
 
 ```bash

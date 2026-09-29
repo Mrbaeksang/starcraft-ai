@@ -1,0 +1,45 @@
+{
+  "schema": "scai-remastered-counter-correlation-v1",
+  "client_version": "1.23.10.13515",
+  "client_sha256": "ce3ab05dc9a6aa35418947e5d95e19651ad6fbcd5e2c1856cd729c5b7c31281c",
+  "pid": 60180,
+  "rejected_candidate_rva": "0x1090870",
+  "active_private_computer_match": {
+    "samples": [7281, 7305, 7329],
+    "sample_interval_ms": 1000,
+    "delta_each_interval": 24,
+    "screen_context": "private Melee match versus Computer"
+  },
+  "post_match_result_screen": {
+    "samples": [0, 0],
+    "sample_interval_ms": 500,
+    "screen_context": "Defeat result; displayed elapsed time 07:36"
+  },
+  "resident_read_only_bridge": {
+    "snapshot_requests": 30,
+    "candidate_values": [0],
+    "median_round_trip_ms": 0.48,
+    "p95_round_trip_ms": 2.38,
+    "tested_on": "post-match result screen"
+  },
+  "paused_replay_falsification": {
+    "screen_context": "Replay paused at displayed elapsed time 02:12",
+    "rejected_candidate_samples": [55209, 55361],
+    "sample_interval_ms": 500,
+    "rejected_candidate_delta": 152,
+    "paused_stable_rvas": ["0x10936bc", "0x10936a8", "0x10936c4"],
+    "conclusion": "0x1090870 keeps advancing while the replay is paused and is not the authoritative simulation frame"
+  },
+  "unit_descriptor_scan": {
+    "context": "paused private-computer replay",
+    "writable_image_section": ".data",
+    "pointer_count_capacity_candidates": 269,
+    "highest_records_passing_readable_sprite_and_classic_layout_checks": 1,
+    "conclusion": "No active CUnit array proven in the scanned .data descriptors"
+  },
+  "interpretation": "The initial match-only counter hypothesis was falsified by a paused replay. The three pause-sensitive values are unclassified candidates; none is a verified game frame.",
+  "active_match_proven": false,
+  "game_frame_proven": false,
+  "read_units_proven": false,
+  "issue_commands_proven": false
+}

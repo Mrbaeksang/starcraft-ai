@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-foreach ($name in @('attach_probe.ps1', 'input_bridge.ps1', 'state_probe.ps1')) {
+foreach ($name in @('attach_probe.ps1', 'input_bridge.ps1', 'state_probe.ps1', 'state_bridge.ps1', 'resource_probe.ps1')) {
     $path = Join-Path $PSScriptRoot $name
     $tokens = $null
     $parseErrors = $null
@@ -18,14 +18,20 @@ foreach ($name in @('attach_probe.ps1', 'input_bridge.ps1', 'state_probe.ps1')) 
 $invalidManifest = Join-Path $env:TEMP ('scai-invalid-manifest-' + [guid]::NewGuid().ToString('N') + '.json')
 try {
     Set-Content -LiteralPath $invalidManifest -Value '{"schema":"invalid"}' -Encoding UTF8
-    $output = ''
-    try {
-        & (Join-Path $PSScriptRoot 'attach_probe.ps1') -ManifestPath $invalidManifest | Out-Null
-    } catch {
-        $output = $_.Exception.Message
-    }
-    if ($output -notmatch 'Unsupported client manifest') {
-        throw "Malformed manifest was not rejected as expected: $output"
+    foreach ($name in @('attach_probe.ps1', 'state_bridge.ps1', 'resource_probe.ps1')) {
+        $output = ''
+        try {
+            if ($name -eq 'state_bridge.ps1') {
+                & (Join-Path $PSScriptRoot $name) -ManifestPath $invalidManifest -CandidateRva 0x1090870 | Out-Null
+            } else {
+                & (Join-Path $PSScriptRoot $name) -ManifestPath $invalidManifest | Out-Null
+            }
+        } catch {
+            $output = $_.Exception.Message
+        }
+        if ($output -notmatch 'Unsupported client manifest') {
+            throw "$name did not reject malformed manifest: $output"
+        }
     }
     Write-Output 'Malformed manifest rejected'
 } finally {

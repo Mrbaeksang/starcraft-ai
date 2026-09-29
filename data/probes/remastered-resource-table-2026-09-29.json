@@ -1,0 +1,24 @@
+{
+  "schema": "scai-remastered-resource-table-diagnostic-v1",
+  "client_version": "1.23.10.13515",
+  "client_sha256": "ce3ab05dc9a6aa35418947e5d95e19651ad6fbcd5e2c1856cd729c5b7c31281c",
+  "pid": 60180,
+  "source": "read-only StarCraft.exe .data snapshots during a paused private-computer replay",
+  "candidate_table_base_rva": "0xe801b4",
+  "candidate_stride_bytes": 1768,
+  "candidate_name_table_base_rva": "0x106a008",
+  "candidate_name_stride_bytes": 232,
+  "name_slots_at_three_paused_replay_points": ["baeksang100", "Computer"],
+  "expected_self_name_match": {"name": "baeksang100", "candidate_slot": 0},
+  "slot_zero_minerals": [
+    {"replay_hud": 50, "memory": 50, "displayed_elapsed": "00:58"},
+    {"replay_hud": 90, "memory": 90, "displayed_elapsed": "02:12"},
+    {"replay_hud": 186, "memory": 186, "displayed_elapsed": "03:28"}
+  ],
+  "slot_one_gas": {"replay_hud": 216, "memory": 216, "displayed_elapsed": "03:28"},
+  "other_slots": "Slots 2 through 6 held the initial 50 minerals and 0 gas at 03:28; slot 7 held 0 and 0.",
+  "unresolved": "Slot one minerals read 42 while the paused replay HUD still displayed 92 at 03:28. It may be a UI timing difference, but the cause has not been proven.",
+  "live_match_validation_proven": false,
+  "local_player_id_proven": false,
+  "policy_observation_usable": false
+}
