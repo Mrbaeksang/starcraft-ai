@@ -68,7 +68,7 @@ structured game action
 | M4 | Latent skills and discrete diffusion action proposals | research |
 | M5 | Self-play population and fixed evaluation league | research |
 
-See [TODO.md](TODO.md) and the open [GitHub Issues](https://github.com/Mrbaeksang/starcraft-ai/issues).
+See [ROADMAP.md](ROADMAP.md) and the open [GitHub Issues](https://github.com/Mrbaeksang/starcraft-ai/issues).
 
 ## Data pipeline
 
@@ -190,7 +190,6 @@ GitHub-hosted CPU runners are intentionally used for everything that does not re
 ├── MODEL_CARD.md
 ├── DATA_CARD.md
 ├── CHANGELOG.md
-├── TODO.md
 └── AGENTS.md                 # Codex/agent operating rules
 ```
 

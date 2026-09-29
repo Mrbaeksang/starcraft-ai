@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "source_run": "https://github.com/Mrbaeksang/starcraft-ai/actions/runs/36410823242",
+  "source_commit": "0b25dbb036e6893eb51f8defbb5d9aadaf21dbb2",
+  "sample_tcr_sha256": "399c9dcafb798c2e61244aebf4ca9194601edadf18c03772eff4c96beffe8cf7",
+  "sample_states_jsonl_sha256": "c93bb0c38856727e649ef9cc3c2d55e49d7b70c317bfcae3847972744e826b64",
+  "paired_replay_sha256": "32dc810119e04fe8d77d18f32f43e0858bda957c48dacca1a846a42b297b2cf8",
+  "paired_actions_jsonl_sha256": "bb85c35b49e3c2ffca35727ef1bcb67667a4cf558da9f683d3b8e8efb391d223",
+  "sampled_states": 1884,
+  "tcr_actions": 0,
+  "paired_replay_actions": 952,
+  "frame_delta": 10,
+  "aligned_actions": 952,
+  "selected_actor_refs": 2435,
+  "raw_actor_id_matches": 0,
+  "raw_actor_owner_matches": 0,
+  "actor_identity_mapping_verified": false,
+  "authoritative_state_verified": false,
+  "ready_for_transition_v1_training": false
+}
