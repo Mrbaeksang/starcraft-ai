@@ -2,7 +2,7 @@
 
 ## Mission
 
-Build a reproducible open research framework for a StarCraft: Brood War agent based on structured latent world models and planning.
+Build a reproducible open research framework for a StarCraft: Brood War agent based on structured latent world models and planning. The delivery target is autonomous play against humans on the current Battle.net public matchmaking and ladder.
 
 This repository values falsifiable experiments over hype. Do not claim an idea is stronger, novel, or state of the art unless the repository contains a directly supporting evaluation.
 
@@ -21,7 +21,7 @@ Before changing learning/data architecture, read:
 - Primary learner: Windows 11 host + WSL2 Ubuntu.
 - Python 3.12, package manager uv.
 - GPU target: NVIDIA RTX 5090 via PyTorch CUDA 13.0 wheels.
-- Brood War runtime: classic 1.16.1 + BWAPI on Windows.
+- Offline collector: classic 1.16.1 + BWAPI on Windows. Live target: current StarCraft: Remastered client; see `docs/REMASTERED_RUNTIME.md`.
 - Never commit StarCraft binaries, MPQ files, commercial assets, or private replay collections.
 
 ## CI-first rule
@@ -87,7 +87,7 @@ Research-method PRs state: hypothesis, baseline, dataset/split, metric, failure 
 
 ## Immediate roadmap
 
-Implement **M1 replay/state collection**, not diffusion or self-play.
+Complete **M1 replay/state collection** and the current-client runtime gate before claiming a playable agent. Do not jump to diffusion or self-play.
 
 M1 definition of done:
 

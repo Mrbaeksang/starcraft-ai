@@ -20,9 +20,10 @@
 > **Current status: M0 complete, M1 in progress.** This repository contains a reproducible research scaffold, real replay acquisition, model smoke tests, and CI research infrastructure. It does **not** yet contain a trained competitive StarCraft agent.
 
 **Delivery target:** an agent that plays humans on the current StarCraft:
-Remastered Battle.net public matchmaking and ladder. The live-client capture,
-perception, and input loop has not been verified or implemented. See the
-[runtime gate](ROADMAP.md#runtime-gate--before-claiming-a-playable-agent).
+Remastered Battle.net public matchmaking and ladder. Background window capture
+and a targeted keyboard input have been verified; mouse gameplay control and
+the full live loop have not. See the [runtime probe](docs/REMASTERED_RUNTIME.md)
+and [runtime gate](ROADMAP.md#runtime-gate--before-claiming-a-playable-agent).
 
 ## The idea
 

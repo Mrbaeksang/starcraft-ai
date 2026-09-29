@@ -1,0 +1,37 @@
+{
+  "schema": "remastered_window_probe_v1",
+  "client_file_version": "1.23.10.13515",
+  "client_executable": "C:\\Program Files (x86)\\StarCraft\\x86_64\\StarCraft.exe",
+  "capture_tool": {
+    "name": "Microsoft winapp CLI",
+    "version": "0.7.0",
+    "source": "https://github.com/microsoft/winappCli/releases/tag/v0.7.0"
+  },
+  "window_title": "Brood War",
+  "window_foreground_during_capture": false,
+  "capture": {
+    "width": 1920,
+    "height": 1080,
+    "nonblack_lobby_visually_verified": true,
+    "local_png_sha256": "7a8cbeedf0698ce5cb51b6646ed0740a78250afa5c4bb3b6f671a15882b8cffc",
+    "screenshot_committed": false
+  },
+  "recording": {
+    "mode": "wgc",
+    "requested_fps": 15,
+    "duration_seconds": 3,
+    "samples": 45,
+    "achieved_fps": 14.985,
+    "video_committed": false
+  },
+  "background_keyboard": {
+    "transport": "post-message",
+    "typed_into_chat_input": true,
+    "removed_without_sending": true,
+    "effect_visually_verified": true
+  },
+  "mouse_targeting_verified": false,
+  "gameplay_commands_verified": false,
+  "human_public_match_completed": false,
+  "ladder_match_completed": false
+}
