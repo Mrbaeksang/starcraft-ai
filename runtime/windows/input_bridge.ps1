@@ -1,11 +1,14 @@
-# Persistent foreground input for the current x64 Windows StarCraft client.
+# Persistent foreground input for the pinned x64 Windows StarCraft client.
 # JSON lines on stdin/stdout; no matchmaking or game policy is embedded here.
+param([Parameter(Mandatory = $true)][string]$ManifestPath)
 $ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Drawing
 
 Add-Type -TypeDefinition @'
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 public static class StarCraftInput {
     [StructLayout(LayoutKind.Sequential)]
@@ -53,17 +56,23 @@ public static class StarCraftInput {
             throw new InvalidOperationException("game_dimensions_changed");
     }
 
-    public static double Click(IntPtr window, uint processId, int width, int height, int x, int y) {
+    public static double Click(IntPtr window, uint processId, int width, int height, int x, int y, string button) {
         Verify(window, processId, width, height);
         if (x < 0 || y < 0 || x >= width || y >= height)
             throw new ArgumentOutOfRangeException("client_coordinates");
+        uint downFlag = button == "left" ? 0x0002u : button == "right" ? 0x0008u : 0;
+        uint upFlag = button == "left" ? 0x0004u : button == "right" ? 0x0010u : 0;
+        if (downFlag == 0) throw new ArgumentOutOfRangeException("button");
         POINT screen = new POINT { X = x, Y = y };
         if (!ClientToScreen(window, ref screen)) throw new InvalidOperationException("screen_transform_failed");
         Stopwatch timer = Stopwatch.StartNew();
         if (!SetCursorPos(screen.X, screen.Y)) throw new InvalidOperationException("cursor_move_failed");
-        INPUT down = new INPUT { type = 0, mouse = new MOUSEINPUT { dwFlags = 0x0002 } };
-        INPUT up = new INPUT { type = 0, mouse = new MOUSEINPUT { dwFlags = 0x0004 } };
-        if (SendInput(2, new INPUT[] { down, up }, Marshal.SizeOf(typeof(INPUT))) != 2)
+        INPUT down = new INPUT { type = 0, mouse = new MOUSEINPUT { dwFlags = downFlag } };
+        INPUT up = new INPUT { type = 0, mouse = new MOUSEINPUT { dwFlags = upFlag } };
+        uint pressed = SendInput(1, new INPUT[] { down }, Marshal.SizeOf(typeof(INPUT)));
+        Thread.Sleep(50);
+        uint released = SendInput(1, new INPUT[] { up }, Marshal.SizeOf(typeof(INPUT)));
+        if (pressed != 1 || released != 1)
             throw new InvalidOperationException("mouse_send_failed");
         timer.Stop();
         return timer.Elapsed.TotalMilliseconds;
@@ -73,17 +82,21 @@ public static class StarCraftInput {
         Verify(window, processId, width, height);
         if (virtualKeys == null || virtualKeys.Length < 1 || virtualKeys.Length > 4)
             throw new ArgumentOutOfRangeException("virtualKeys");
-        INPUT[] inputs = new INPUT[virtualKeys.Length * 2];
+        INPUT[] downs = new INPUT[virtualKeys.Length];
+        INPUT[] ups = new INPUT[virtualKeys.Length];
         for (int i = 0; i < virtualKeys.Length; i++) {
             if (virtualKeys[i] < 1 || virtualKeys[i] > 254)
                 throw new ArgumentOutOfRangeException("virtualKeys");
-            inputs[i] = new INPUT { type = 1, keyboard = new KEYBDINPUT { wVk = (ushort)virtualKeys[i] } };
-            inputs[inputs.Length - 1 - i] = new INPUT {
+            downs[i] = new INPUT { type = 1, keyboard = new KEYBDINPUT { wVk = (ushort)virtualKeys[i] } };
+            ups[virtualKeys.Length - 1 - i] = new INPUT {
                 type = 1, keyboard = new KEYBDINPUT { wVk = (ushort)virtualKeys[i], dwFlags = 0x0002 }
             };
         }
         Stopwatch timer = Stopwatch.StartNew();
-        if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT))) != inputs.Length)
+        uint pressed = SendInput((uint)downs.Length, downs, Marshal.SizeOf(typeof(INPUT)));
+        Thread.Sleep(50);
+        uint released = SendInput((uint)ups.Length, ups, Marshal.SizeOf(typeof(INPUT)));
+        if (pressed != downs.Length || released != ups.Length)
             throw new InvalidOperationException("keyboard_send_failed");
         timer.Stop();
         return timer.Elapsed.TotalMilliseconds;
@@ -94,13 +107,27 @@ public static class StarCraftInput {
 $games = @(Get-Process -Name StarCraft -ErrorAction Stop | Where-Object { $_.MainWindowTitle -eq 'Brood War' })
 if ($games.Count -ne 1) { throw "Expected one Brood War window; found $($games.Count)" }
 $game = $games[0]
+$manifest = Get-Content -LiteralPath $ManifestPath -Raw | ConvertFrom-Json
+if ($manifest.schema -ne 'scai-remastered-client-v1' -or
+    $manifest.product -ne 'starcraft-remastered' -or
+    $manifest.architecture -ne 'x86_64' -or
+    $manifest.executable_name -ne 'StarCraft.exe') {
+    throw 'Unsupported client manifest'
+}
+$imagePath = $game.MainModule.FileName
+$fileVersion = $game.MainModule.FileVersionInfo.FileVersion
+$imageHash = (Get-FileHash -LiteralPath $imagePath -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($fileVersion -ne $manifest.version -or $imageHash -ne $manifest.sha256.ToLowerInvariant()) {
+    throw "Client build mismatch: version=$fileVersion sha256=$imageHash"
+}
 $window = $game.MainWindowHandle
 $pidAtStart = [uint32]$game.Id
 $rect = New-Object StarCraftInput+RECT
 if (-not [StarCraftInput]::GetClientRect($window, [ref]$rect)) { throw 'Cannot read client rect' }
 $width = $rect.Right - $rect.Left
 $height = $rect.Bottom - $rect.Top
-[Console]::Out.WriteLine((@{ ok = $true; event = 'ready'; pid = $pidAtStart; hwnd = $window.ToInt64(); width = $width; height = $height } | ConvertTo-Json -Compress))
+$frameSequence = 0
+[Console]::Out.WriteLine((@{ ok = $true; event = 'ready'; pid = $pidAtStart; hwnd = $window.ToInt64(); width = $width; height = $height; client_version = $fileVersion; client_sha256 = $imageHash } | ConvertTo-Json -Compress))
 
 $running = $true
 while ($running) {
@@ -117,13 +144,39 @@ while ($running) {
                 if ($null -eq $request.x -or $null -eq $request.y) {
                     throw 'click requires x and y'
                 }
-                $elapsed = [StarCraftInput]::Click($window, $pidAtStart, $width, $height, [int]$request.x, [int]$request.y)
-                $response = @{ ok = $true; op = 'click'; x = [int]$request.x; y = [int]$request.y; input_ms = $elapsed }
+                $button = if ($null -eq $request.button) { 'left' } else { [string]$request.button }
+                $elapsed = [StarCraftInput]::Click($window, $pidAtStart, $width, $height, [int]$request.x, [int]$request.y, $button)
+                $response = @{ ok = $true; op = 'click'; x = [int]$request.x; y = [int]$request.y; button = $button; input_ms = $elapsed }
             }
             'keys' {
                 if ($null -eq $request.vks) { throw 'keys requires vks' }
                 $elapsed = [StarCraftInput]::Keys($window, $pidAtStart, $width, $height, [int[]]@($request.vks))
                 $response = @{ ok = $true; op = 'keys'; input_ms = $elapsed }
+            }
+            'capture' {
+                [StarCraftInput]::Verify($window, $pidAtStart, $width, $height)
+                $origin = New-Object StarCraftInput+POINT
+                if (-not [StarCraftInput]::ClientToScreen($window, [ref]$origin)) {
+                    throw 'screen_transform_failed'
+                }
+                $frameSequence += 1
+                $path = Join-Path $env:TEMP ("scai-frame-$pidAtStart-$frameSequence.png")
+                $bitmap = New-Object System.Drawing.Bitmap($width, $height)
+                $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+                $timer = [System.Diagnostics.Stopwatch]::StartNew()
+                try {
+                    $graphics.CopyFromScreen($origin.X, $origin.Y, 0, 0, $bitmap.Size)
+                    $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+                } finally {
+                    $timer.Stop()
+                    $graphics.Dispose()
+                    $bitmap.Dispose()
+                }
+                if ($frameSequence -gt 8) {
+                    $expired = Join-Path $env:TEMP ("scai-frame-$pidAtStart-$($frameSequence - 8).png")
+                    Remove-Item -LiteralPath $expired -ErrorAction SilentlyContinue
+                }
+                $response = @{ ok = $true; op = 'capture'; sequence = $frameSequence; path = $path; capture_ms = $timer.Elapsed.TotalMilliseconds; width = $width; height = $height }
             }
             'quit' {
                 $response = @{ ok = $true; op = 'quit' }

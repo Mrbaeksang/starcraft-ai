@@ -27,11 +27,16 @@ does not presently offer a usable Ranked entry; a private lobby or legacy
 - [x] Verify targeted keyboard input; remove the test character without chat.
 - [x] Verify foreground mouse click through computer-use in the lobby (News
   dialog opened). This proves UI targeting only; it is too slow for gameplay.
-- [ ] Prove a **native, persistent** Windows input process can click exact
-  client coordinates and issue hotkeys with measured latency. This is a menu
-  automation/fallback transport, not proof of game-state/action integration.
-- [ ] Replace per-command PNG/CLI startup with a continuous frame stream for
-  lobby recognition and visual checks; log latency and dropped frames.
+- [x] Prove a **native, persistent** Windows input process can click exact
+  client coordinates with measured latency. The persistent bridge also exposes
+  hotkeys, but their visible effect is not yet proved; this is a menu/fallback
+  transport, not game-state/action integration.
+- [x] Replace per-command CLI startup with a persistent foreground frame
+  request loop for lobby recognition and visual checks. A 30-frame live sample
+  captured 1920×1080 PNGs at p95 68.96 ms. This is screen capture, not a
+  native game-state stream. See [evidence](data/probes/remastered-foreground-2026-09-29.json).
+- [ ] Prove hotkeys and measure sustained capture/action latency, stale frames,
+  and dropped frames during an active match.
 
 ### 0A. Build and publish a current-client game adapter (primary path)
 
@@ -40,6 +45,9 @@ does not presently offer a usable Ranked entry; a private lobby or legacy
 - [x] Open the matching Windows process read-only and read its in-memory PE
   header. This proves attachment, not game-state extraction. See
   [`runtime/remastered_adapter/README.md`](runtime/remastered_adapter/README.md).
+- [x] Add a version-locked, read-only scanner for changing 32-bit values in
+  the client's `.data` section. These are unclassified counter candidates;
+  a changing value alone does not prove a game frame or active match.
 - [x] Audit the open [BWAPI Remastered port](https://github.com/NomaDamas/starcraft-api/blob/main/docs/remastered-porting.md)
   and its LGPL license. The [file-level audit](docs/REMASTERED_ADAPTER_AUDIT.md)
   records reusable contracts and the missing live proofs; use its negative
