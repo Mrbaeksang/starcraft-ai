@@ -22,10 +22,11 @@ target.
    failures for each gate. Do not mark the ladder target complete before an
    actual ladder match finishes with the agent controlling the game.
 
-The installed client was identified as 1.23.10.13515. The current repository
-has no verified Remastered command adapter or public-match runtime. The first
-gate remains open; a window listing alone is not capture/input proof. Track the
-evidence and progress in [issue #22](https://github.com/Mrbaeksang/starcraft-ai/issues/22).
+The installed client was identified as 1.23.10.13515. Background window
+capture and a harmless targeted keyboard input have been verified in the
+[runtime probe](docs/REMASTERED_RUNTIME.md). Mouse targeting and gameplay
+commands remain open, so no public-match runtime or playable agent is claimed.
+Track progress in [issue #22](https://github.com/Mrbaeksang/starcraft-ai/issues/22).
 
 ## M0 — Research scaffold ✅
 

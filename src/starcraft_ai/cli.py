@@ -12,6 +12,20 @@ import typer
 app = typer.Typer(no_args_is_help=True, help="StarCraft AI research utilities.")
 
 
+@app.command("probe-remastered-window")
+def probe_remastered_window(
+    winapp: Annotated[Path, typer.Option(help="Path to Microsoft winapp.exe.")],
+    output: Annotated[Path, typer.Option(help="Local PNG output path outside this repository.")],
+) -> None:
+    """Capture the current client without foregrounding it or sending input."""
+    from starcraft_ai.remastered_runtime import WinAppWindow
+
+    client = WinAppWindow(winapp)
+    window = client.find_game_window()
+    result = client.capture(window, output)
+    typer.echo(json.dumps(result.to_dict(), indent=2, sort_keys=True))
+
+
 @app.command()
 def doctor() -> None:
     """Print the local Python/PyTorch/CUDA environment."""
