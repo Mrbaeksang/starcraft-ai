@@ -40,6 +40,13 @@ does not presently offer a usable Ranked entry; a private lobby or legacy
   was behind Orca; the bridge checks the process and HWND after activation.
 - [ ] Prove hotkeys and measure sustained capture/action latency, stale frames,
   and dropped frames during an active match.
+- [x] Verify the foreground UI transport during private Melee on Fighting
+  Spirit: select a Protoss Probe, right-click to move and gather, then select
+  the Nexus and queue a Probe. The visible movement, resource increase, and
+  Nexus production panel are recorded in
+  [live command evidence](data/probes/remastered-live-commands-2026-09-29.json).
+  Coordinates were chosen by the assistant, so this is a transport proof and
+  does not count as autonomous bot play or a native command-path proof.
 
 ### 0A. Build and publish a current-client game adapter (primary path)
 
