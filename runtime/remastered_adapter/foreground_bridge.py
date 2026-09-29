@@ -142,10 +142,10 @@ class ForegroundBridge:
             except (TimeoutError, RuntimeError):
                 self._process.kill()
                 raise
-            if result.get("op") != payload["op"]:
-                raise RuntimeError("The foreground bridge response is out of order")
             if not result.get("ok"):
                 raise RuntimeError(str(result.get("error", "The foreground bridge rejected input")))
+            if result.get("op") != payload["op"]:
+                raise RuntimeError("The foreground bridge response is out of order")
             return result
 
     def capture(self) -> Frame:

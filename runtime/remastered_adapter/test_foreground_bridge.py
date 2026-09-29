@@ -23,6 +23,8 @@ for line in sys.stdin:
     if op == "capture":
         result = {"ok": True, "op": op, "path": "C:\\frame.png", "sequence": 1,
                   "width": 1, "height": 1, "capture_ms": 12.5}
+    elif op == "click" and request["x"] < 0:
+        result = {"ok": False, "error": "client_coordinates"}
     elif op == "click":
         result = {"ok": True, "op": op, "x": request["x"], "y": request["y"],
                   "button": request["button"], "input_ms": 2.5}
@@ -54,6 +56,8 @@ class ForegroundBridgeTest(unittest.TestCase):
                 self.assertEqual((bridge.pid, bridge.hwnd), (7, 8))
                 self.assertEqual(bridge.click(0, 0), 2.5)
                 self.assertEqual(bridge.click(0, 0, "right"), 2.5)
+                with self.assertRaisesRegex(RuntimeError, "client_coordinates"):
+                    bridge.click(-1, 0)
                 frame = bridge.capture()
                 self.assertEqual((frame.path, frame.sequence, frame.capture_ms), (image, 1, 12.5))
                 with self.assertRaisesRegex(RuntimeError, "Frame sequence"):
