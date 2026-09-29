@@ -32,6 +32,8 @@ jobs:
           cache: false
       - name: Test manifest fail-closed behavior
         run: go test ./...
+      - name: Test persistent foreground bridge protocol
+        run: python3 -m unittest discover -s . -p 'test_*.py'
       - name: Cross-compile Windows x64 adapter probe
         run: GOOS=windows GOARCH=amd64 go build -o /tmp/remastered-adapter.exe .
 

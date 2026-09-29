@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-foreach ($name in @('attach_probe.ps1', 'input_bridge.ps1')) {
+foreach ($name in @('attach_probe.ps1', 'input_bridge.ps1', 'state_probe.ps1')) {
     $path = Join-Path $PSScriptRoot $name
     $tokens = $null
     $parseErrors = $null

@@ -27,6 +27,7 @@ runtime/*
 !runtime/remastered_adapter/**
 !runtime/windows/
 !runtime/windows/*.ps1
+runtime/remastered_adapter/__pycache__/
 *.rep
 !tests/fixtures/larva_vs_mini.rep
 *.scx

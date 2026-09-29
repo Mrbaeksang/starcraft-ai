@@ -1,0 +1,31 @@
+{
+  "schema": "remastered_foreground_probe_v1",
+  "client_version": "1.23.10.13515",
+  "pid": 60180,
+  "window_handle": 855176,
+  "window_size": [1920, 1080],
+  "version_locked_bridge_startup_verified": true,
+  "tested_screen": "Battle.net lobby and custom-game list",
+  "capture": {
+    "transport": "persistent PowerShell Add-Type and System.Drawing.CopyFromScreen",
+    "sample_frames": 30,
+    "median_ms": 57.95,
+    "p95_ms": 68.96,
+    "max_ms": 75.1,
+    "png_dimensions_verified": true,
+    "foreground_required": true
+  },
+  "input": {
+    "transport": "SendInput",
+    "sample_click_hold_ms": 0,
+    "join_screen_click_ms": 10.4454,
+    "return_to_lobby_click_ms": 5.6524,
+    "click_effect_visually_verified": true,
+    "current_click_hold_ms": 50,
+    "current_click_latency_remeasured": false,
+    "hotkey_effect_verified": false
+  },
+  "game_state_read_proven": false,
+  "in_game_command_proven": false,
+  "autonomous_game_proven": false
+}
