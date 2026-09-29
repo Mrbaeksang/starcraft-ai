@@ -24,7 +24,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File runtime/windows/attach_p
   -ManifestPath runtime/remastered_adapter/manifests/1.23.10.13515.json
 ```
 
-The Go probe has the same manifest check and builds a Windows x64 executable:
+The Go probe checks the executable hash against the manifest and builds a
+Windows x64 executable. Its `manifest_version` field is a manifest label, not
+an independently read Windows file version. The PowerShell live probe checks
+both the file version and hash.
 
 ```bash
 cd runtime/remastered_adapter

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"math"
 	"os"
 	"syscall"
 	"unsafe"
@@ -29,7 +30,7 @@ var (
 
 type attachResult struct {
 	Schema                string  `json:"schema"`
-	ClientVersion         string  `json:"client_version"`
+	ManifestVersion       string  `json:"manifest_version"`
 	ClientSHA256          string  `json:"client_sha256"`
 	PID                   uint32  `json:"pid"`
 	WindowHandle          uintptr `json:"window_handle"`
@@ -77,7 +78,7 @@ func attach(pid uint32, manifest ClientManifest) (attachResult, error) {
 	}
 	return attachResult{
 		Schema:                "scai-remastered-attach-v1",
-		ClientVersion:         manifest.Version,
+		ManifestVersion:       manifest.Version,
 		ClientSHA256:          hash,
 		PID:                   pid,
 		WindowHandle:          window,
@@ -93,7 +94,7 @@ func main() {
 	manifestPath := flag.String("manifest", "", "exact client build manifest")
 	processID := flag.Uint("pid", 0, "running StarCraft PID")
 	flag.Parse()
-	if *manifestPath == "" || *processID == 0 {
+	if *manifestPath == "" || *processID == 0 || *processID > math.MaxUint32 {
 		fmt.Fprintln(os.Stderr, "usage: remastered-adapter -manifest <path> -pid <pid>")
 		os.Exit(2)
 	}

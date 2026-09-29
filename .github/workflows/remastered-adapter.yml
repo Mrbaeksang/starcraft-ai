@@ -40,13 +40,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Parse Windows runtime scripts
+      - name: Compile Windows interop and reject malformed manifest
         shell: powershell
-        run: |
-          foreach ($path in @('runtime/windows/attach_probe.ps1', 'runtime/windows/input_bridge.ps1')) {
-            $tokens = $null
-            $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile(
-              (Resolve-Path $path).Path, [ref]$tokens, [ref]$errors) | Out-Null
-            if ($errors.Count -gt 0) { throw "$path : $($errors[0].Message)" }
-          }
+        run: ./runtime/windows/test_contract.ps1
