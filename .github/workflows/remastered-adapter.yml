@@ -1,0 +1,52 @@
+name: Remastered adapter
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/remastered_adapter/**"
+      - "runtime/windows/**"
+      - ".github/workflows/remastered-adapter.yml"
+  pull_request:
+    paths:
+      - "runtime/remastered_adapter/**"
+      - "runtime/windows/**"
+      - ".github/workflows/remastered-adapter.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: runtime/remastered_adapter
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: runtime/remastered_adapter/go.mod
+          cache: false
+      - name: Test manifest fail-closed behavior
+        run: go test ./...
+      - name: Cross-compile Windows x64 adapter probe
+        run: GOOS=windows GOARCH=amd64 go build -o /tmp/remastered-adapter.exe .
+
+  powershell-syntax:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Parse Windows runtime scripts
+        shell: powershell
+        run: |
+          foreach ($path in @('runtime/windows/attach_probe.ps1', 'runtime/windows/input_bridge.ps1')) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path).Path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { throw "$path : $($errors[0].Message)" }
+          }

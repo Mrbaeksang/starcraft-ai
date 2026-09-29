@@ -1,0 +1,21 @@
+{
+  "schema": "remastered_attach_probe_v1",
+  "client_version": "1.23.10.13515",
+  "client_sha256": "ce3ab05dc9a6aa35418947e5d95e19651ad6fbcd5e2c1856cd729c5b7c31281c",
+  "client_architecture": "x86_64",
+  "source_manifest": "runtime/remastered_adapter/manifests/1.23.10.13515.json",
+  "verified_on_installed_windows_client": {
+    "version_locked_attach": true,
+    "read_process_memory_pe_header": true,
+    "read_game_state_proven": false,
+    "issue_commands_proven": false,
+    "multiplayer_sync_proven": false
+  },
+  "build": {
+    "go_unit_tests_passed": true,
+    "windows_x64_cross_compile_passed": true,
+    "unsigned_executable_started_on_this_host": false,
+    "host_code_integrity_events": [3033, 3077],
+    "powershell_read_only_probe_started_on_this_host": true
+  }
+}

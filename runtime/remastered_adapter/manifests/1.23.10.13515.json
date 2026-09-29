@@ -1,0 +1,8 @@
+{
+  "schema": "scai-remastered-client-v1",
+  "product": "starcraft-remastered",
+  "version": "1.23.10.13515",
+  "architecture": "x86_64",
+  "executable_name": "StarCraft.exe",
+  "sha256": "ce3ab05dc9a6aa35418947e5d95e19651ad6fbcd5e2c1856cd729c5b7c31281c"
+}

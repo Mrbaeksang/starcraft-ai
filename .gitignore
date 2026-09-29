@@ -21,6 +21,12 @@ data/interim/
 data/processed/
 data/local/
 runtime/
+!runtime/
+runtime/*
+!runtime/remastered_adapter/
+!runtime/remastered_adapter/**
+!runtime/windows/
+!runtime/windows/*.ps1
 *.rep
 !tests/fixtures/larva_vs_mini.rep
 *.scx

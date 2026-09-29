@@ -69,8 +69,10 @@ still requires observation.
 
 ## Next gate
 
-Implement reliable mouse coordinates and game commands on a dedicated Windows
-desktop/session or VM so the agent can operate without taking over the user's
-active desktop. Validate a local game before public matchmaking, then finish an
-actual human public match and ladder match. The offline BWAPI/replay pipeline
-does not supply a verified live interface for this client.
+Build the version-locked [public Remastered adapter](../runtime/remastered_adapter/README.md)
+to read player-observable live state and issue verified game commands. A
+foreground input bridge may handle lobby menus and diagnostics, but must not
+stand in for the match policy loop. Validate a local game before automatic
+entry into a public Melee room and a full human match. Ranked remains a later
+gate while unavailable in the current client. The offline BWAPI/replay
+pipeline does not supply a verified live interface for this client.
