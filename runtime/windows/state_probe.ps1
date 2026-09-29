@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$ManifestPath,
     [int]$TargetPid = 0,
-    [ValidateRange(100, 5000)][int]$IntervalMs = 1000
+    [ValidateRange(100, 5000)][int]$IntervalMs = 1000,
+    [string]$WatchRva = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -97,11 +98,46 @@ public static class ScaiStateProbe {
             CloseHandle(process);
         }
     }
+
+    public static uint[][] Watch(uint pid, long[] addresses, int intervalMs) {
+        IntPtr process = OpenProcess(0x0410, false, pid);
+        if (process == IntPtr.Zero) throw new InvalidOperationException("OpenProcess failed");
+        try {
+            uint[][] values = new uint[addresses.Length][];
+            for (int i = 0; i < addresses.Length; i++) values[i] = new uint[2];
+            for (int sample = 0; sample < 2; sample++) {
+                if (sample != 0) Thread.Sleep(intervalMs);
+                for (int i = 0; i < addresses.Length; i++)
+                    values[i][sample] = BitConverter.ToUInt32(Read(process, addresses[i], 4), 0);
+            }
+            return values;
+        } finally {
+            CloseHandle(process);
+        }
+    }
 }
 '@
 
 $address = $game.MainModule.BaseAddress.ToInt64() + $dataRva
+$watchAddresses = @()
+$watchNames = @($WatchRva.Split(',', [System.StringSplitOptions]::RemoveEmptyEntries))
+foreach ($text in $watchNames) {
+    if ($text -cnotmatch '^0x[0-9a-fA-F]{1,8}$') { throw "Invalid watch RVA: $text" }
+    $rva = [Convert]::ToInt64($text.Substring(2), 16)
+    if ($rva -lt $dataRva -or $rva -gt $dataRva + $dataSize - 4 -or $rva % 4 -ne 0) {
+        throw "Watch RVA outside aligned .data section: $text"
+    }
+    $watchAddresses += $game.MainModule.BaseAddress.ToInt64() + $rva
+}
 $candidates = [ScaiStateProbe]::FindCounters([uint32]$game.Id, $address, $dataSize, $IntervalMs)
+$watched = @()
+if ($watchAddresses.Count -gt 0) {
+    $samples = [ScaiStateProbe]::Watch([uint32]$game.Id, [long[]]$watchAddresses, $IntervalMs)
+    for ($i = 0; $i -lt $watchAddresses.Count; $i++) {
+        $watched += @{ rva = $watchNames[$i]; first = $samples[$i][0];
+            second = $samples[$i][1]; delta = $samples[$i][1] - $samples[$i][0] }
+    }
+}
 $top = @($candidates | Sort-Object @{ Expression = { [Math]::Abs($_.Delta1 - 24) + [Math]::Abs($_.Delta2 - 24) } } |
     Select-Object -First 30 | ForEach-Object {
         @{ rva = ('0x{0:x}' -f ($dataRva + $_.Offset)); first = $_.First;
@@ -117,6 +153,7 @@ $top = @($candidates | Sort-Object @{ Expression = { [Math]::Abs($_.Delta1 - 24)
     sample_interval_ms = $IntervalMs
     candidate_count = $candidates.Length
     candidates = $top
+    watched_counters = $watched
     active_match_proven = $false
     game_frame_proven = $false
     read_units_proven = $false

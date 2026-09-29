@@ -48,6 +48,18 @@ does not presently offer a usable Ranked entry; a private lobby or legacy
 - [x] Add a version-locked, read-only scanner for changing 32-bit values in
   the client's `.data` section. These are unclassified counter candidates;
   a changing value alone does not prove a game frame or active match.
+- [x] Falsify the first frame-counter candidate: `0x1090870` advanced by
+  24 per second during a private match but continued advancing while a replay
+  was paused. Add a resident read-only bridge for low-latency sampling and
+  keep the game-frame proof false. Search pause-sensitive values and active
+  unit data before promoting any address to a policy observation.
+- [x] Find a provisional native resource table in this build. Slot-zero
+  minerals matched three paused-replay HUD values; the eight-slot stride and
+  slot-one gas had supporting evidence. A neighboring name table identified
+  the candidate self slot by exact name; the default probe output includes
+  only that slot. Keep it outside policy observations until active-match
+  validation, local-player identity, and one slot-one mineral mismatch are
+  resolved.
 - [x] Audit the open [BWAPI Remastered port](https://github.com/NomaDamas/starcraft-api/blob/main/docs/remastered-porting.md)
   and its LGPL license. The [file-level audit](docs/REMASTERED_ADAPTER_AUDIT.md)
   records reusable contracts and the missing live proofs; use its negative
