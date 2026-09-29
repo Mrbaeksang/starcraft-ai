@@ -24,6 +24,9 @@ Remastered Battle.net public matchmaking and ladder. Background window capture
 and a targeted keyboard input have been verified; mouse gameplay control and
 the full live loop have not. See the [runtime probe](docs/REMASTERED_RUNTIME.md)
 and [runtime gate](ROADMAP.md#runtime-gate--before-claiming-a-playable-agent).
+The active implementation checklist is [TODO.md](TODO.md); the
+[public Remastered adapter](runtime/remastered_adapter/README.md) starts with a
+version-locked, read-only process probe and does not yet control a match.
 
 ## The idea
 

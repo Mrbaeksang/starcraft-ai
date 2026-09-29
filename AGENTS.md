@@ -22,6 +22,7 @@ Before changing learning/data architecture, read:
 - Python 3.12, package manager uv.
 - GPU target: NVIDIA RTX 5090 via PyTorch CUDA 13.0 wheels.
 - Offline collector: classic 1.16.1 + BWAPI on Windows. Live target: current StarCraft: Remastered client; see `docs/REMASTERED_RUNTIME.md`.
+- Primary live integration: the public current-client adapter in `runtime/remastered_adapter/`; screen/computer-use input is a menu and diagnostic fallback, not the match policy loop.
 - Never commit StarCraft binaries, MPQ files, commercial assets, or private replay collections.
 
 ## CI-first rule
@@ -87,7 +88,7 @@ Research-method PRs state: hypothesis, baseline, dataset/split, metric, failure 
 
 ## Immediate roadmap
 
-Complete **M1 replay/state collection** and the current-client runtime gate before claiming a playable agent. Do not jump to diffusion or self-play.
+Complete the autonomous current-client runtime in `TODO.md` and **M1 replay/state collection** before claiming a playable agent. A manually driven computer-use session is not a bot. Do not jump to diffusion or a self-play league before the live baseline works.
 
 M1 definition of done:
 

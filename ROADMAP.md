@@ -9,12 +9,18 @@ Remastered Battle.net public matchmaking and ladder. A private lobby, legacy
 1.16.1/BWAPI match, replay-only evaluation, or self-play does not satisfy this
 target.
 
+The immediate acceptance target is autonomous entry into a public Melee room
+on Fighting Spirit or Python and completion of a human game. Ranked is a later
+gate while the installed client's Ranked entry is unavailable. The executable
+work list and pass criteria are in [TODO.md](TODO.md).
+
 ### Runtime gate — before claiming a playable agent
 
 1. On the installed current Windows client, capture an unobscured game frame
    and deliver a harmless input; record the client version and evidence.
-2. Build a player-observable screen-to-action loop that can identify the match
-   state, select units, and issue commands at a measured latency. Keep the
+2. Build a player-observable live-state-to-action loop through a version-locked
+   public adapter that can identify the match state, select units, and issue
+   commands at a measured latency. Keep the
    replay/BWAPI data path as research input until its observations and actions
    have been mapped to this live interface.
 3. Complete a local game through that loop, then a human public match, then a
