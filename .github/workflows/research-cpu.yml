@@ -83,7 +83,7 @@ jobs:
           uv run --extra cpu scai benchmark-synthetic             --profile ${{ inputs.profile }}             --steps ${{ needs.validate.outputs.steps }}             --seed ${{ matrix.seed }}             --device cpu             --output artifacts/result-${{ inputs.profile }}-${{ matrix.seed }}.json
 
       - name: Upload result
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: research-${{ inputs.profile }}-${{ matrix.seed }}-${{ github.run_id }}
           path: artifacts/*.json

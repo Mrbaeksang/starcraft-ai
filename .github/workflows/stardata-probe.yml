@@ -306,7 +306,7 @@ jobs:
               print("Actor IDs differ between StarData states and replay actions; conversion to TransitionV1 requires a verified mapping.")
           PY
       - name: Upload probe report
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: stardata-source-probe
           path: artifacts/
